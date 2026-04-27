@@ -1,0 +1,130 @@
+﻿@model korshi.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Вход";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Вход — Körши</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+
+    <div class="auth-page">
+
+        <!-- Left panel -->
+        <div class="auth-left">
+            <div class="auth-brand">
+                <span class="auth-logo">Körши</span>
+                <p class="auth-tagline">Платформа для соседей вашего ЖК</p>
+            </div>
+            <div class="auth-features">
+                <div class="auth-feature">
+                    <div class="auth-feature__icon"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="auth-feature__title">Только верифицированные жильцы</div>
+                        <div class="auth-feature__desc">Каждый аккаунт проверяется председателем ОСИ</div>
+                    </div>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature__icon"><i class="bi bi-bell"></i></div>
+                    <div>
+                        <div class="auth-feature__title">Важные уведомления</div>
+                        <div class="auth-feature__desc">Аварии, отключения, объявления — всё в одном месте</div>
+                    </div>
+                </div>
+                <div class="auth-feature">
+                    <div class="auth-feature__icon"><i class="bi bi-chat-dots"></i></div>
+                    <div>
+                        <div class="auth-feature__title">Общение с соседями</div>
+                        <div class="auth-feature__desc">Барахолка, взаимовыручка и живое общение</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right panel -->
+        <div class="auth-right">
+            <div class="auth-card">
+
+                <div class="auth-card__header">
+                    <h1 class="auth-card__title">Добро пожаловать</h1>
+                    <p class="auth-card__sub">Войдите в аккаунт своего ЖК</p>
+                </div>
+
+                <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="auth-alert">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <div>
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <div>@error.ErrorMessage</div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    <div class="auth-field">
+                        <label asp-for="Email" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-envelope auth-input-icon"></i>
+                            <input asp-for="Email" class="auth-input" placeholder="your@email.com" autocomplete="email" />
+                        </div>
+                        <span asp-validation-for="Email" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Password" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-lock auth-input-icon"></i>
+                            <input asp-for="Password" class="auth-input" placeholder="Ваш пароль" id="loginPwd" autocomplete="current-password" />
+                            <button type="button" class="auth-eye" onclick="togglePwd('loginPwd','loginEye')" tabindex="-1">
+                                <i class="bi bi-eye" id="loginEye"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="auth-error"></span>
+                    </div>
+
+                    <div class="auth-remember">
+                        <label class="auth-check">
+                            <input asp-for="RememberMe" type="checkbox" />
+                            <span>Запомнить меня</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="auth-btn">
+                        Войти
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+
+                    <p class="auth-switch">
+                        Нет аккаунта?
+                        <a asp-action="Register" asp-controller="Account">Зарегистрироваться</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePwd(fieldId, iconId) {
+            const f = document.getElementById(fieldId);
+            const i = document.getElementById(iconId);
+            if (f.type === 'password') { f.type = 'text'; i.className = 'bi bi-eye-slash'; }
+            else { f.type = 'password'; i.className = 'bi bi-eye'; }
+        }
+    </script>
+</body>
+</html>

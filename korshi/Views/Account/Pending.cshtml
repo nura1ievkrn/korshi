@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Ожидание подтверждения";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ожидание — Körши</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/auth.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+
+    <div class="auth-page auth-page--center">
+        <div class="auth-card auth-card--pending">
+
+            <div class="pending-icon">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+
+            <h1 class="auth-card__title" style="text-align:center; margin-bottom:10px;">
+                Заявка отправлена!
+            </h1>
+
+            <p class="pending-text">
+                Ваш аккаунт зарегистрирован и ожидает подтверждения<br>
+                председателем ОСИ вашего жилого комплекса.
+            </p>
+
+            <div class="pending-steps">
+                <div class="pending-step pending-step--done">
+                    <div class="pending-step__dot"><i class="bi bi-check"></i></div>
+                    <div class="pending-step__label">Аккаунт создан</div>
+                </div>
+                <div class="pending-step pending-step--active">
+                    <div class="pending-step__dot pending-step__dot--pulse"></div>
+                    <div class="pending-step__label">Проверка председателем ОСИ</div>
+                </div>
+                <div class="pending-step">
+                    <div class="pending-step__dot pending-step__dot--empty"></div>
+                    <div class="pending-step__label">Доступ открыт</div>
+                </div>
+            </div>
+
+            <p class="pending-hint">
+                <i class="bi bi-info-circle"></i>
+                Обычно это занимает не более 24 часов. После подтверждения вы сможете войти.
+            </p>
+
+            <a asp-action="Login" asp-controller="Account" class="auth-btn" style="display:flex; justify-content:center; text-decoration:none;">
+                Перейти ко входу
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

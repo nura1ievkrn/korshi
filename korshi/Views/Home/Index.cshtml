@@ -1,8 +1,259 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Лента";
+    ViewData["ActiveNav"] = "wall";
+    ViewData["BannerMessage"] = "Авария: отключена горячая вода до 18:00";
+    ViewData["BannerType"] = "emergency";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section RightPanel {
+    <!-- Активные голосования -->
+    <div class="kw-panel-card">
+        <div class="kw-panel-card__title">
+            <i class="bi bi-bar-chart-line"></i>
+            Активные голосования
+        </div>
+
+        <div class="kw-poll-item">
+            <div class="kw-poll-item__question">Установить новую дверь в подъезд?</div>
+            <div class="kw-progress">
+                <div class="kw-progress__fill" data-pct="37" style="width:0%"></div>
+            </div>
+            <div class="kw-poll-meta">45 из 120</div>
+            <button class="kw-btn-vote">Проголосовать</button>
+        </div>
+
+        <div class="kw-poll-item" style="margin-top:16px;">
+            <div class="kw-poll-item__question">Согласны ли вы с новым порядком парковки?</div>
+            <div class="kw-progress">
+                <div class="kw-progress__fill" data-pct="60" style="width:0%"></div>
+            </div>
+            <div class="kw-poll-meta">72 из 120</div>
+            <button class="kw-btn-vote">Проголосовать</button>
+        </div>
+    </div>
+
+    <!-- Соседи онлайн -->
+    <div class="kw-panel-card">
+        <div class="kw-panel-card__title">
+            <i class="bi bi-people"></i>
+            Соседи онлайн
+        </div>
+        <div class="kw-online">
+            <div class="kw-online__avatars">
+                <div class="kw-online__av" style="background:#E8450A;">А</div>
+                <div class="kw-online__av" style="background:#8B5CF6;">Б</div>
+                <div class="kw-online__av" style="background:#10B981;">В</div>
+                <div class="kw-online__av" style="background:#F59E0B;">Г</div>
+                <div class="kw-online__av kw-online__av--more">+14</div>
+            </div>
+            <div class="kw-online__label">18 соседей онлайн</div>
+        </div>
+    </div>
+
+    <!-- Предстоящие события -->
+    <div class="kw-panel-card">
+        <div class="kw-panel-card__title">
+            <i class="bi bi-calendar3"></i>
+            Предстоящие события
+        </div>
+        <div class="kw-events">
+            <div class="kw-event-item">
+                <span class="kw-event-date">19 Ноября</span>
+                <span class="kw-event-title">Субботник у дома</span>
+            </div>
+            <div class="kw-event-item">
+                <span class="kw-event-date">20 Ноября</span>
+                <span class="kw-event-title">Встреча управления</span>
+            </div>
+            <div class="kw-event-item">
+                <span class="kw-event-date">25 Ноября</span>
+                <span class="kw-event-title">Уборка придомовой территории</span>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- ══════════════════════════════════════════
+     MAIN FEED BODY
+══════════════════════════════════════════ -->
+<!-- Filter tabs -->
+<div class="kw-tabs">
+    <button class="kw-tab kw-tab--active" data-category="all">Все</button>
+    <button class="kw-tab" data-category="wall">Стена</button>
+    <button class="kw-tab" data-category="market">Барахолка</button>
+    <button class="kw-tab" data-category="aid">Взаимовыручка</button>
+    <button class="kw-tab" data-category="poll">Голосования</button>
+</div>
+
+<!-- Sort row -->
+<div class="kw-feed-toolbar">
+    <span class="kw-feed-count">6 объявлений</span>
+    <div class="kw-sort">
+        <select class="kw-sort__select">
+            <option>Новые сначала</option>
+            <option>Популярные</option>
+            <option>Старые сначала</option>
+        </select>
+        <i class="bi bi-chevron-down kw-sort__icon"></i>
+    </div>
+</div>
+
+<!-- Cards grid -->
+<div class="kw-grid">
+
+    <!-- Card 1: Стена -->
+    <div class="kw-card kw-card--wall" data-category="wall">
+        <div class="kw-card__body">
+            <div class="kw-card__header">
+                <div class="kw-avatar">НС</div>
+                <div class="kw-card__meta">
+                    <div class="kw-card__name">
+                        Нурлан Сергеев
+                        <i class="bi bi-check-circle-fill kw-card__verified"></i>
+                        <span class="kw-apt-badge" style="margin-left:4px;">кв. 205</span>
+                    </div>
+                    <div class="kw-card__time">1 мин назад</div>
+                </div>
+            </div>
+            <div class="kw-cat-tag kw-cat-tag--wall">Стена</div>
+            <div class="kw-card__title">Как добраться до метро?</div>
+            <div class="kw-card__excerpt">
+                Кто-нибудь знает самый быстрый способ добраться до станции метро Алатау? Хочу найти оптимальный маршрут...
+            </div>
+            <div class="kw-card__footer">
+                <span class="kw-card__stat"><i class="bi bi-heart"></i> 12</span>
+                <span class="kw-card__stat"><i class="bi bi-chat"></i> 5</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Барахолка -->
+    <div class="kw-card kw-card--market" data-category="market">
+        <div class="kw-card__body">
+            <div class="kw-card__header">
+                <div class="kw-avatar">ГЕ</div>
+                <div class="kw-card__meta">
+                    <div class="kw-card__name">
+                        Гулбану Ергалиева
+                        <i class="bi bi-check-circle-fill kw-card__verified"></i>
+                        <span class="kw-apt-badge" style="margin-left:4px;">кв. 412</span>
+                    </div>
+                    <div class="kw-card__time">3 часа назад</div>
+                </div>
+            </div>
+            <div class="kw-cat-tag kw-cat-tag--market">Барахолка</div>
+            <div class="kw-card__title">Продаю детский велосипед</div>
+            <div class="kw-card__excerpt">
+                Велосипед почти новый, 3 скорости, светящиеся колёса. Идеально для ребёнка 4–6 лет. Торг уместен.
+            </div>
+            <div class="kw-card__footer">
+                <span class="kw-card__stat"><i class="bi bi-heart"></i> 24</span>
+                <span class="kw-card__stat"><i class="bi bi-chat"></i> 8</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Взаимовыручка -->
+    <div class="kw-card kw-card--aid" data-category="aid">
+        <div class="kw-card__body">
+            <div class="kw-card__header">
+                <div class="kw-avatar">АА</div>
+                <div class="kw-card__meta">
+                    <div class="kw-card__name">
+                        Асан Абдуллин
+                        <i class="bi bi-check-circle-fill kw-card__verified"></i>
+                        <span class="kw-apt-badge" style="margin-left:4px;">кв. 301</span>
+                    </div>
+                    <div class="kw-card__time">5 часов назад</div>
+                </div>
+            </div>
+            <div class="kw-cat-tag kw-cat-tag--aid">Взаимовыручка</div>
+            <div class="kw-card__title">Нужна помощь с переездом</div>
+            <div class="kw-card__excerpt">
+                Ищу помощников для переноса мебели на 3 этаж. Помогу с загрузкой машины. Расстояние 500м.
+            </div>
+            <div class="kw-card__footer">
+                <span class="kw-card__stat"><i class="bi bi-heart"></i> 5</span>
+                <span class="kw-card__stat"><i class="bi bi-chat"></i> 2</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Голосования -->
+    <div class="kw-card kw-card--poll" data-category="poll">
+        <div class="kw-card__body">
+            <div class="kw-card__header">
+                <div class="kw-avatar">БЖ</div>
+                <div class="kw-card__meta">
+                    <div class="kw-card__name">
+                        Ботай Жангалиев
+                        <i class="bi bi-check-circle-fill kw-card__verified"></i>
+                        <span class="kw-apt-badge" style="margin-left:4px;">кв. 501</span>
+                    </div>
+                    <div class="kw-card__time">1 день назад</div>
+                </div>
+            </div>
+            <div class="kw-cat-tag kw-cat-tag--poll">Голосования</div>
+            <div class="kw-card__title">Голосование: Новый порядок парковки</div>
+            <div class="kw-card__excerpt">
+                Уважаемые жители! Просим вас проголосовать за предложенный новый порядок парковки во дворе...
+            </div>
+            <div class="kw-card__footer">
+                <span class="kw-card__stat"><i class="bi bi-heart"></i> 45</span>
+                <span class="kw-card__stat"><i class="bi bi-chat"></i> 12</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 5: Барахолка -->
+    <div class="kw-card kw-card--market" data-category="market">
+        <div class="kw-card__body">
+            <div class="kw-card__header">
+                <div class="kw-avatar">АО</div>
+                <div class="kw-card__meta">
+                    <div class="kw-card__name">
+                        Айнур Оспанова
+                        <i class="bi bi-check-circle-fill kw-card__verified"></i>
+                        <span class="kw-apt-badge" style="margin-left:4px;">кв. 215</span>
+                    </div>
+                    <div class="kw-card__time">2 дня назад</div>
+                </div>
+            </div>
+            <div class="kw-cat-tag kw-cat-tag--market">Барахолка</div>
+            <div class="kw-card__title">Услуги репетитора по математике</div>
+            <div class="kw-card__excerpt">
+                Даю уроки математики ученикам 5–9 классов. Стаж 10 лет. Первый урок — пробный. Звоните!
+            </div>
+            <div class="kw-card__footer">
+                <span class="kw-card__stat"><i class="bi bi-heart"></i> 8</span>
+                <span class="kw-card__stat"><i class="bi bi-chat"></i> 3</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 6: Стена -->
+    <div class="kw-card kw-card--wall" data-category="wall">
+        <div class="kw-card__body">
+            <div class="kw-card__header">
+                <div class="kw-avatar">ЕК</div>
+                <div class="kw-card__meta">
+                    <div class="kw-card__name">
+                        Ерик Кенесов
+                        <span class="kw-apt-badge" style="margin-left:4px;">кв. 623</span>
+                    </div>
+                    <div class="kw-card__time">2 дня назад</div>
+                </div>
+            </div>
+            <div class="kw-cat-tag kw-cat-tag--wall">Стена</div>
+            <div class="kw-card__title">Потеряна кошка</div>
+            <div class="kw-card__excerpt">
+                Потеряла кошка рыжего цвета, с белыми пятнами. Откликается на имя Мурзик. Видели в районе...
+            </div>
+            <div class="kw-card__footer">
+                <span class="kw-card__stat"><i class="bi bi-heart"></i> 34</span>
+                <span class="kw-card__stat"><i class="bi bi-chat"></i> 7</span>
+            </div>
+        </div>
+    </div>
+
 </div>

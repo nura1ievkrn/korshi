@@ -1,49 +1,192 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - korshi</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] — Körши</title>
+
+    <!-- Google Fonts: Unbounded + Manrope -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/korshi.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">korshi</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+
+    <!-- ══════════════════════════════════════════
+         TOP HEADER
+    ══════════════════════════════════════════ -->
+    <header class="kw-header">
+        <!-- Left: hamburger + logo + complex badge -->
+        <div class="kw-header__left">
+            <button class="kw-hamburger" id="sidebarToggle" aria-label="Открыть меню">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="/" class="kw-logo">Körши</a>
+            <span class="kw-complex-badge">ЖК Nurly Tau</span>
+        </div>
+
+        <!-- Center: search -->
+        <div class="kw-header__center">
+            <div class="kw-search">
+                <i class="bi bi-search kw-search__icon"></i>
+                <input type="text" class="kw-search__input" placeholder="Поиск по объявлениям..." />
+            </div>
+        </div>
+
+        <!-- Right: weather + bell + avatar -->
+        <div class="kw-header__right">
+            <div class="kw-weather">
+                <i class="bi bi-sun kw-weather__icon"></i>
+                <span class="kw-weather__temp">24°C</span>
+                <span class="kw-weather__city">Алматы</span>
+            </div>
+            <button class="kw-bell" aria-label="Уведомления">
+                <i class="bi bi-bell"></i>
+                <span class="kw-bell__dot"></span>
+            </button>
+            <div class="kw-avatar kw-avatar--header">АН</div>
+        </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════
+         ALERT BANNER
+    ══════════════════════════════════════════ -->
+    @if (ViewData["BannerMessage"] != null)
+    {
+        var bannerType = ViewData["BannerType"]?.ToString() ?? "info";
+        var bannerClass = bannerType == "emergency" ? "kw-banner kw-banner--emergency" : "kw-banner kw-banner--info";
+        var badgeText = bannerType == "emergency" ? "АВАРИЯ" : "ИНФО";
+        <div class="@bannerClass" id="alertBanner" role="alert">
+            <div class="kw-banner__left">
+                <span class="kw-banner__dot"></span>
+                <i class="bi bi-exclamation-circle kw-banner__icon"></i>
+                <span class="kw-banner__text">@ViewData["BannerMessage"]</span>
+            </div>
+            <div class="kw-banner__right">
+                <span class="kw-banner__badge">@badgeText</span>
+                <button class="kw-banner__close" onclick="document.getElementById('alertBanner').remove()" aria-label="Закрыть">
+                    <i class="bi bi-x-lg"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+            </div>
+        </div>
+    }
+
+    <!-- ══════════════════════════════════════════
+         LAYOUT WRAPPER
+    ══════════════════════════════════════════ -->
+    <div class="kw-layout">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="kw-sidebar" id="sidebar">
+
+            <!-- User card -->
+            <div class="kw-sidebar__user">
+                <div class="kw-avatar kw-avatar--lg">АН</div>
+                <div class="kw-sidebar__user-info">
+                    <div class="kw-sidebar__username">
+                        Нурлан
+                        <i class="bi bi-check-circle-fill kw-verified"></i>
+                    </div>
+                    <span class="kw-apt-badge">Кв. 402</span>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+            <nav class="kw-sidebar__nav">
+
+                <!-- ЛЕНТА -->
+                <div class="kw-nav-group">
+                    <span class="kw-nav-label">ЛЕНТА</span>
+
+                    <a href="/Feed" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "wall" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-house-door"></i>
+                        <span>Стена</span>
+                    </a>
+
+                    <a href="/Marketplace" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "market" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-bag"></i>
+                        <span>Барахолка</span>
+                        <span class="kw-nav-badge">12</span>
+                    </a>
+
+                    <a href="/MutualAid" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "aid" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-heart"></i>
+                        <span>Взаимовыручка</span>
+                    </a>
+
+                    <a href="/Polls" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "polls" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <span>Голосования</span>
+                        <span class="kw-nav-badge">3</span>
+                    </a>
+                </div>
+
+                <!-- СЕРВИСЫ -->
+                <div class="kw-nav-group">
+                    <span class="kw-nav-label">СЕРВИСЫ</span>
+
+                    <a href="/ServiceRequests" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "requests" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-wrench"></i>
+                        <span>Заявки на ремонт</span>
+                    </a>
+
+                    <a href="/Reports" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "reports" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span>Финансовые отчёты</span>
+                    </a>
+
+                    <a href="/Announcements" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "announcements" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-megaphone"></i>
+                        <span>Объявления ОСИ</span>
+                    </a>
+                </div>
+
+                <!-- АККАУНТ -->
+                <div class="kw-nav-group">
+                    <span class="kw-nav-label">АККАУНТ</span>
+
+                    <a href="/Account/Settings" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "settings" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-gear"></i>
+                        <span>Настройки</span>
+                    </a>
+
+                    <a href="/Account/Logout" class="kw-nav-item kw-nav-item--logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Выйти</span>
+                    </a>
+                </div>
+
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="kw-main">
             @RenderBody()
         </main>
+
+        <!-- RIGHT PANEL -->
+        <aside class="kw-right-panel">
+            @await RenderSectionAsync("RightPanel", required: false)
+        </aside>
+
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - korshi - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- FAB Button -->
+    <button class="kw-fab" aria-label="Создать объявление">
+        <i class="bi bi-plus-lg"></i>
+    </button>
+
+    <!-- Toast container -->
+    <div class="kw-toast-container" id="toastContainer"></div>
+
+    <!-- Sidebar overlay (mobile) -->
+    <div class="kw-sidebar-overlay" id="sidebarOverlay"></div>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
