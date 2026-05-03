@@ -2809,3 +2809,42 @@ a {
     background: #3B82F6;
     flex-shrink: 0;
 }
+/* ══════════════════════════════════════════
+   LANGUAGE SWITCHER
+   Добавить в конец site.css
+══════════════════════════════════════════ */
+
+.kw-lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: #F3F4F6;
+    border-radius: 8px;
+    padding: 2px;
+}
+
+.kw-lang-btn {
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+    .kw-lang-btn:hover {
+        color: var(--text-primary);
+        background: #fff;
+    }
+
+.kw-lang-btn--active {
+    background: #fff;
+    color: var(--accent);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}

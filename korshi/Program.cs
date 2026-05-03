@@ -3,7 +3,9 @@ using korshi.Hubs;
 using korshi.Models;
 using korshi.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,12 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+
+// ── Локализация ──────────────────────────────────────────
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
 
 // ── SignalR ──────────────────────────────────────────────
 builder.Services.AddSignalR();
@@ -92,6 +100,20 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// ── Локализация middleware ────────────────────────────────
+var supportedCultures = new[]
+{
+    new CultureInfo("ru"),
+    new CultureInfo("kk")
+};
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("ru"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

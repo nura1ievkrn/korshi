@@ -70,6 +70,26 @@
                 <span class="kw-weather__city" id="weatherCity">Алматы</span>
             </div>
 
+            <!-- Language switcher -->
+            <div class="kw-lang-switcher">
+                <form asp-action="Set" asp-controller="Language" method="post" style="margin:0;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                    <input type="hidden" name="culture" value="ru" />
+                    <button type="submit" class="kw-lang-btn @(System.Threading.Thread.CurrentThread.CurrentUICulture.Name == "ru" ? "kw-lang-btn--active" : "")">
+                        РУ
+                    </button>
+                </form>
+                <form asp-action="Set" asp-controller="Language" method="post" style="margin:0;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                    <input type="hidden" name="culture" value="kk" />
+                    <button type="submit" class="kw-lang-btn @(System.Threading.Thread.CurrentThread.CurrentUICulture.Name == "kk" ? "kw-lang-btn--active" : "")">
+                        ҚАЗ
+                    </button>
+                </form>
+            </div>
+
             @if (SignInManager.IsSignedIn(User))
             {
                 <!-- Bell -->
@@ -181,13 +201,13 @@
                         <span>Стена</span>
                     </a>
 
-                    <a href="/Marketplace" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "market" ? "kw-nav-item--active" : "")">
+                    <a href="/Feed?category=market" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "market" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-bag"></i>
                         <span>Барахолка</span>
                         <span class="kw-nav-badge">12</span>
                     </a>
 
-                    <a href="/MutualAid" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "aid" ? "kw-nav-item--active" : "")">
+                    <a href="/Feed?category=aid" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "aid" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-heart"></i>
                         <span>Взаимовыручка</span>
                     </a>

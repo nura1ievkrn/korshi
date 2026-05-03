@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+
+  <data name="Feed" xml:space="preserve"><value>Жаңалықтар</value></data>
+  <data name="Wall" xml:space="preserve"><value>Қабырға</value></data>
+  <data name="Marketplace" xml:space="preserve"><value>Сауда алаңы</value></data>
+  <data name="MutualAid" xml:space="preserve"><value>Өзара көмек</value></data>
+  <data name="Polls" xml:space="preserve"><value>Дауыс беру</value></data>
+  <data name="ServiceRequests" xml:space="preserve"><value>Жөндеу өтінімдері</value></data>
+  <data name="FinancialReports" xml:space="preserve"><value>Қаржылық есептер</value></data>
+  <data name="Announcements" xml:space="preserve"><value>ОСИ хабарландырулары</value></data>
+  <data name="Chat" xml:space="preserve"><value>Чат</value></data>
+  <data name="Settings" xml:space="preserve"><value>Баптаулар</value></data>
+  <data name="Logout" xml:space="preserve"><value>Шығу</value></data>
+  <data name="CreatePost" xml:space="preserve"><value>Жаңалық жазу</value></data>
+  <data name="Publish" xml:space="preserve"><value>Жариялау</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Болдырмау</value></data>
+  <data name="Send" xml:space="preserve"><value>Жіберу</value></data>
+  <data name="Title" xml:space="preserve"><value>Тақырып</value></data>
+  <data name="Content" xml:space="preserve"><value>Мәтін</value></data>
+  <data name="Category" xml:space="preserve"><value>Санат</value></data>
+  <data name="Login" xml:space="preserve"><value>Кіру</value></data>
+  <data name="Register" xml:space="preserve"><value>Тіркелу</value></data>
+  <data name="FirstName" xml:space="preserve"><value>Аты</value></data>
+  <data name="LastName" xml:space="preserve"><value>Тегі</value></data>
+  <data name="PhoneNumber" xml:space="preserve"><value>Телефон нөмірі</value></data>
+  <data name="Address" xml:space="preserve"><value>Мекенжай</value></data>
+  <data name="ApartmentNumber" xml:space="preserve"><value>Пәтер нөмірі</value></data>
+  <data name="Password" xml:space="preserve"><value>Құпия сөз</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Құпия сөзді растау</value></data>
+  <data name="Save" xml:space="preserve"><value>Сақтау</value></data>
+  <data name="Notifications" xml:space="preserve"><value>Хабарландырулар</value></data>
+  <data name="AllPosts" xml:space="preserve"><value>Барлық жазбалар</value></data>
+  <data name="LikedPosts" xml:space="preserve"><value>Ұнаған жазбалар</value></data>
+  <data name="MyPosts" xml:space="preserve"><value>Менің жазбаларым</value></data>
+  <data name="Vote" xml:space="preserve"><value>Дауыс беру</value></data>
+  <data name="Results" xml:space="preserve"><value>Нәтижелер</value></data>
+  <data name="NewRequest" xml:space="preserve"><value>Жаңа өтінім</value></data>
+  <data name="AdminPanel" xml:space="preserve"><value>Әкімші панелі</value></data>
+  <data name="Residents" xml:space="preserve"><value>Тұрғындар</value></data>
+  <data name="Verified" xml:space="preserve"><value>Расталған</value></data>
+  <data name="Pending" xml:space="preserve"><value>Күтуде</value></data>
+  <data name="Banned" xml:space="preserve"><value>Блокталған</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Растау</value></data>
+  <data name="Block" xml:space="preserve"><value>Блоктау</value></data>
+  <data name="Delete" xml:space="preserve"><value>Жою</value></data>
+  <data name="Services" xml:space="preserve"><value>Қызметтер</value></data>
+  <data name="Categories" xml:space="preserve"><value>Санаттар</value></data>
+  <data name="Banners" xml:space="preserve"><value>Баннерлер</value></data>
+  <data name="Events" xml:space="preserve"><value>Іс-шаралар</value></data>
+  <data name="Search" xml:space="preserve"><value>Іздеу</value></data>
+  <data name="NoResults" xml:space="preserve"><value>Нәтиже табылмады</value></data>
+  <data name="Welcome" xml:space="preserve"><value>Қош келдіңіз</value></data>
+  <data name="NewAnnouncement" xml:space="preserve"><value>Жаңа хабарландыру</value></data>
+  <data name="CreatePoll" xml:space="preserve"><value>Дауыс беру жасау</value></data>
+  <data name="Question" xml:space="preserve"><value>Сұрақ</value></data>
+  <data name="EndDate" xml:space="preserve"><value>Аяқталу күні</value></data>
+  <data name="Option" xml:space="preserve"><value>Нұсқа</value></data>
+  <data name="Profile" xml:space="preserve"><value>Профиль</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>Профильді өзгерту</value></data>
+  <data name="ChangePassword" xml:space="preserve"><value>Құпия сөзді өзгерту</value></data>
+  <data name="CurrentPassword" xml:space="preserve"><value>Ағымдағы құпия сөз</value></data>
+  <data name="NewPassword" xml:space="preserve"><value>Жаңа құпия сөз</value></data>
+  <data name="Publications" xml:space="preserve"><value>Жарияланымдар</value></data>
+  <data name="Liked" xml:space="preserve"><value>Ұнады</value></data>
+  <data name="Online" xml:space="preserve"><value>Желіде</value></data>
+  <data name="UpcomingEvents" xml:space="preserve"><value>Алдағы іс-шаралар</value></data>
+  <data name="ActivePolls" xml:space="preserve"><value>Белсенді дауыс берулер</value></data>
+  <data name="Neighbors" xml:space="preserve"><value>Көршілер</value></data>
+  <data name="WriteMessage" xml:space="preserve"><value>Хабарлама жазу...</value></data>
+  <data name="SearchNeighbor" xml:space="preserve"><value>Көршіні іздеу...</value></data>
+  <data name="NoNotifications" xml:space="preserve"><value>Хабарландырулар жоқ</value></data>
+  <data name="NewMessage" xml:space="preserve"><value>Жаңа хабарлама</value></data>
+  <data name="StatusNew" xml:space="preserve"><value>Жаңа</value></data>
+  <data name="StatusInProcess" xml:space="preserve"><value>Орындалуда</value></data>
+  <data name="StatusDone" xml:space="preserve"><value>Орындалды</value></data>
+  <data name="Emergency" xml:space="preserve"><value>АПАТ</value></data>
+  <data name="Info" xml:space="preserve"><value>АҚПАРАТ</value></data>
+  <data name="Language" xml:space="preserve"><value>Тіл</value></data>
+</root>
