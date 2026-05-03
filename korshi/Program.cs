@@ -36,10 +36,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-builder.Services.AddControllersWithViews();
-
 // ── Локализация ──────────────────────────────────────────
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+// ВАЖНО: один вызов AddControllersWithViews со всеми настройками
 builder.Services.AddControllersWithViews()
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
@@ -107,6 +107,7 @@ var supportedCultures = new[]
     new CultureInfo("ru"),
     new CultureInfo("kk")
 };
+
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture("ru"),

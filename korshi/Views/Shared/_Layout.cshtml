@@ -19,14 +19,13 @@
     var isVerified = currentUser?.IsVerified ?? false;
     var isAdmin = currentUser != null && await UserManager.IsInRoleAsync(currentUser, "AdminOSI");
 
-    // Загружаем активный баннер из БД
     var activeBanner = DbContext.Banners
         .Where(b => b.IsActive && (b.ExpiresAt == null || b.ExpiresAt > DateTime.UtcNow))
         .OrderByDescending(b => b.CreatedAt)
         .FirstOrDefault();
 }
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="@System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,9 +41,6 @@
 </head>
 <body>
 
-    <!-- ══════════════════════════════════════════
-         TOP HEADER
-    ══════════════════════════════════════════ -->
     <header class="kw-header">
 
         <div class="kw-header__left">
@@ -58,12 +54,11 @@
         <div class="kw-header__center">
             <div class="kw-search">
                 <i class="bi bi-search kw-search__icon"></i>
-                <input type="text" class="kw-search__input" placeholder="Поиск по объявлениям..." />
+                <input type="text" class="kw-search__input" placeholder="@L["Search"]..." />
             </div>
         </div>
 
         <div class="kw-header__right">
-            <!-- Weather widget -->
             <div class="kw-weather" id="weatherWidget">
                 <i class="bi bi-sun kw-weather__icon" id="weatherIcon"></i>
                 <span class="kw-weather__temp" id="weatherTemp">--°C</span>
@@ -76,7 +71,7 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
                     <input type="hidden" name="culture" value="ru" />
-                    <button type="submit" class="kw-lang-btn @(System.Threading.Thread.CurrentThread.CurrentUICulture.Name == "ru" ? "kw-lang-btn--active" : "")">
+                    <button type="submit" class="kw-lang-btn @(System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName == "ru" ? "kw-lang-btn--active" : "")">
                         РУ
                     </button>
                 </form>
@@ -84,7 +79,7 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
                     <input type="hidden" name="culture" value="kk" />
-                    <button type="submit" class="kw-lang-btn @(System.Threading.Thread.CurrentThread.CurrentUICulture.Name == "kk" ? "kw-lang-btn--active" : "")">
+                    <button type="submit" class="kw-lang-btn @(System.Threading.Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName == "kk" ? "kw-lang-btn--active" : "")">
                         ҚАЗ
                     </button>
                 </form>
@@ -92,13 +87,11 @@
 
             @if (SignInManager.IsSignedIn(User))
             {
-                <!-- Bell -->
-                <a href="/Notifications" class="kw-bell" aria-label="Уведомления" style="text-decoration:none;">
+                <a href="/Notifications" class="kw-bell" aria-label="@L["Notifications"]" style="text-decoration:none;">
                     <i class="bi bi-bell"></i>
                     <span class="kw-bell__dot" id="notifDot" style="display:none;"></span>
                 </a>
 
-                <!-- Avatar dropdown -->
                 <div class="kw-header-user" id="headerUserMenu">
                     <div class="kw-avatar kw-avatar--header" onclick="toggleUserMenu()">@initials</div>
                     <div class="kw-user-dropdown" id="userDropdown">
@@ -108,19 +101,19 @@
                         </div>
                         <div class="kw-user-dropdown__divider"></div>
                         <a href="/Profile" class="kw-user-dropdown__item">
-                            <i class="bi bi-gear"></i> Настройки
+                            <i class="bi bi-gear"></i> @L["Settings"]
                         </a>
                         @if (isAdmin)
                         {
                             <a href="/Admin" class="kw-user-dropdown__item">
-                                <i class="bi bi-shield-check"></i> Админ-панель
+                                <i class="bi bi-shield-check"></i> @L["AdminPanel"]
                             </a>
                         }
                         <div class="kw-user-dropdown__divider"></div>
                         <form asp-action="Logout" asp-controller="Account" method="post" style="margin:0">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="kw-user-dropdown__item kw-user-dropdown__item--logout">
-                                <i class="bi bi-box-arrow-right"></i> Выйти
+                                <i class="bi bi-box-arrow-right"></i> @L["Logout"]
                             </button>
                         </form>
                     </div>
@@ -129,21 +122,18 @@
             else
             {
                 <a asp-action="Login" asp-controller="Account" class="kw-header-login-btn">
-                    Войти
+                    @L["Login"]
                 </a>
             }
         </div>
     </header>
 
-    <!-- ══════════════════════════════════════════
-         ALERT BANNER — из БД
-    ══════════════════════════════════════════ -->
     @if (activeBanner != null)
     {
         var bannerClass = activeBanner.Type == BannerType.Emergency
         ? "kw-banner kw-banner--emergency"
         : "kw-banner kw-banner--info";
-        var badgeText = activeBanner.Type == BannerType.Emergency ? "АВАРИЯ" : "ИНФО";
+        var badgeText = activeBanner.Type == BannerType.Emergency ? L["Emergency"].Value : L["Info"].Value;
         <div class="@bannerClass" id="alertBanner" role="alert">
             <div class="kw-banner__left">
                 <span class="kw-banner__dot"></span>
@@ -161,15 +151,10 @@
         </div>
     }
 
-    <!-- ══════════════════════════════════════════
-         LAYOUT WRAPPER
-    ══════════════════════════════════════════ -->
     <div class="kw-layout">
 
-        <!-- LEFT SIDEBAR -->
         <aside class="kw-sidebar" id="sidebar">
 
-            <!-- User card -->
             @if (SignInManager.IsSignedIn(User) && currentUser != null)
             {
                 <div class="kw-sidebar__user">
@@ -192,58 +177,53 @@
 
             <nav class="kw-sidebar__nav">
 
-                <!-- ЛЕНТА -->
                 <div class="kw-nav-group">
-                    <span class="kw-nav-label">ЛЕНТА</span>
+                    <span class="kw-nav-label">@L["Feed"]</span>
 
                     <a href="/" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "wall" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-house-door"></i>
-                        <span>Стена</span>
+                        <span>@L["Wall"]</span>
                     </a>
 
                     <a href="/Feed?category=market" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "market" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-bag"></i>
-                        <span>Барахолка</span>
-                        <span class="kw-nav-badge">12</span>
+                        <span>@L["Marketplace"]</span>
                     </a>
 
                     <a href="/Feed?category=aid" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "aid" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-heart"></i>
-                        <span>Взаимовыручка</span>
+                        <span>@L["MutualAid"]</span>
                     </a>
 
                     <a href="/Polls" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "polls" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-bar-chart-line"></i>
-                        <span>Голосования</span>
-                        <span class="kw-nav-badge">3</span>
+                        <span>@L["Polls"]</span>
                     </a>
                 </div>
 
-                <!-- СЕРВИСЫ -->
                 <div class="kw-nav-group">
                     <span class="kw-nav-label">СЕРВИСЫ</span>
 
                     <a href="/ServiceRequests" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "requests" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-wrench"></i>
-                        <span>Заявки на ремонт</span>
+                        <span>@L["ServiceRequests"]</span>
                     </a>
 
                     <a href="/Reports" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "reports" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-file-earmark-text"></i>
-                        <span>Финансовые отчёты</span>
+                        <span>@L["FinancialReports"]</span>
                     </a>
 
                     <a href="/Announcements" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "announcements" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-megaphone"></i>
-                        <span>Объявления ОСИ</span>
+                        <span>@L["Announcements"]</span>
                     </a>
                     <a href="/Chat" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "chat" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-chat-dots"></i>
-                        <span>Чат</span>
+                        <span>@L["Chat"]</span>
                     </a>
                 </div>
 
-                <!-- АККАУНТ -->
                 <div class="kw-nav-group">
                     <span class="kw-nav-label">АККАУНТ</span>
 
@@ -251,13 +231,13 @@
                     {
                         <a href="/Admin" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "admin" ? "kw-nav-item--active" : "")">
                             <i class="bi bi-shield-check"></i>
-                            <span>Админ-панель</span>
+                            <span>@L["AdminPanel"]</span>
                         </a>
                     }
 
                     <a href="/Profile" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "settings" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-gear"></i>
-                        <span>Настройки</span>
+                        <span>@L["Settings"]</span>
                     </a>
 
                     @if (SignInManager.IsSignedIn(User))
@@ -266,7 +246,7 @@
                             @Html.AntiForgeryToken()
                             <button type="submit" class="kw-nav-item kw-nav-item--logout" style="width:100%; text-align:left; background:none; border:none;">
                                 <i class="bi bi-box-arrow-right"></i>
-                                <span>Выйти</span>
+                                <span>@L["Logout"]</span>
                             </button>
                         </form>
                     }
@@ -274,7 +254,7 @@
                     {
                         <a asp-action="Login" asp-controller="Account" class="kw-nav-item">
                             <i class="bi bi-box-arrow-in-right"></i>
-                            <span>Войти</span>
+                            <span>@L["Login"]</span>
                         </a>
                     }
                 </div>
@@ -282,29 +262,23 @@
             </nav>
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="kw-main">
             @RenderBody()
         </main>
 
-        <!-- RIGHT PANEL -->
         <aside class="kw-right-panel">
             @await RenderSectionAsync("RightPanel", required: false)
         </aside>
 
     </div>
 
-    <!-- Toast container -->
     <div class="kw-toast-container" id="toastContainer"></div>
-
-    <!-- Sidebar overlay (mobile) -->
     <div class="kw-sidebar-overlay" id="sidebarOverlay"></div>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-        // Header user dropdown
         function toggleUserMenu() {
             document.getElementById('userDropdown')?.classList.toggle('kw-user-dropdown--open');
         }
@@ -315,7 +289,6 @@
             }
         });
 
-        // Weather widget
         async function loadWeather() {
             try {
                 const res  = await fetch('/Weather/Get?city=Almaty');
@@ -330,7 +303,6 @@
         }
         loadWeather();
 
-        // Notification count
         async function loadNotifCount() {
             try {
                 const res  = await fetch('/Notifications/Count');
