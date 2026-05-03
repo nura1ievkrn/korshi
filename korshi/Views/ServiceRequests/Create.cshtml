@@ -1,0 +1,78 @@
+﻿@model korshi.ViewModels.CreateServiceRequestViewModel
+@{
+    ViewData["Title"] = "Новая заявка";
+    ViewData["ActiveNav"] = "requests";
+}
+
+<div class="kw-form-page">
+    <div class="kw-form-card">
+
+        <div class="kw-form-card__header">
+            <a href="/ServiceRequests" class="kw-back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="kw-form-card__title">Новая заявка</h1>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="auth-alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <div>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <form asp-action="Create" asp-controller="ServiceRequests" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <!-- Тип услуги -->
+            <div class="kw-field">
+                <label class="kw-label">Тип услуги</label>
+                <div class="sr-service-picker">
+                    @foreach (var service in Model.Services)
+                    {
+                        <label class="sr-service-option">
+                            <input type="radio" name="ServiceId" value="@service.Id"
+                                   @(Model.ServiceId == service.Id ? "checked" : "") />
+                            <div class="sr-service-card"
+                                 style="--svc-color: @service.Color">
+                                <i class="@service.Icon" style="color:@service.Color; font-size:22px;"></i>
+                                <span>@service.Name</span>
+                            </div>
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <!-- Заголовок -->
+            <div class="kw-field">
+                <label asp-for="Title" class="kw-label"></label>
+                <input asp-for="Title" class="kw-input"
+                       placeholder="Например: Течёт кран на кухне" />
+                <span asp-validation-for="Title" class="auth-error"></span>
+            </div>
+
+            <!-- Описание -->
+            <div class="kw-field">
+                <label asp-for="Description" class="kw-label"></label>
+                <textarea asp-for="Description" class="kw-textarea" rows="5"
+                          placeholder="Подробно опишите проблему — когда началась, где именно, насколько срочно..."></textarea>
+                <span asp-validation-for="Description" class="auth-error"></span>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <a href="/ServiceRequests" class="kw-btn-secondary">Отмена</a>
+                <button type="submit" class="kw-btn-primary">
+                    <i class="bi bi-send"></i>
+                    Отправить заявку
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

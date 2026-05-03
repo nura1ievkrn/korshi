@@ -1,0 +1,98 @@
+﻿@model List<korshi.Models.Announcement>
+@{
+    ViewData["Title"] = "Объявления ОСИ";
+    ViewData["AdminNav"] = "announcements";
+}
+
+<div class="adm-page-header">
+    <h1 class="adm-page-title">Объявления ОСИ</h1>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="kw-alert-success" style="margin-bottom:16px;">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+    </div>
+}
+
+<!-- Форма создания -->
+<div class="adm-section" style="margin-bottom:20px;">
+    <div class="adm-section__header">
+        <h2 class="adm-section__title">
+            <i class="bi bi-plus-circle" style="color:var(--accent);"></i>
+            Новое объявление
+        </h2>
+    </div>
+
+    <form asp-action="CreateAnnouncement" asp-controller="Admin" asp-area="Admin" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="kw-field">
+            <label class="kw-label">Заголовок</label>
+            <input type="text" name="Title" class="kw-input"
+                   placeholder="Например: Общее собрание жильцов" required maxlength="200" />
+        </div>
+
+        <div class="kw-field">
+            <label class="kw-label">Текст объявления</label>
+            <textarea name="Content" class="kw-textarea" rows="5"
+                      placeholder="Подробный текст объявления..." required maxlength="5000"></textarea>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end;">
+            <button type="submit" class="kw-btn-primary">
+                <i class="bi bi-megaphone"></i>
+                Опубликовать
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Список объявлений -->
+<div class="adm-section">
+    <div class="adm-section__header">
+        <h2 class="adm-section__title">
+            <i class="bi bi-list-ul"></i>
+            Опубликованные объявления
+        </h2>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="adm-empty">
+            <i class="bi bi-megaphone" style="font-size:36px; opacity:0.3;"></i>
+            <div style="font-size:14px; color:var(--text-muted); margin-top:10px;">Объявлений нет</div>
+        </div>
+    }
+    else
+    {
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            @foreach (var ann in Model)
+            {
+                <div style="background:#F9FAFB; border-radius:10px; padding:14px 16px; border:1px solid var(--border);">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+                        <div style="flex:1;">
+                            <div style="font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">
+                                @ann.Title
+                            </div>
+                            <div style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:6px;">
+                                @ann.Content
+                            </div>
+                            <div style="font-size:11px; color:var(--text-muted);">
+                                @ann.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")
+                            </div>
+                        </div>
+                        <form asp-action="DeleteAnnouncement" asp-controller="Admin" asp-area="Admin"
+                              asp-route-id="@ann.Id" method="post"
+                              onsubmit="return confirm('Удалить объявление?')" style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

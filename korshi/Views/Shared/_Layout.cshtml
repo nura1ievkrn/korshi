@@ -1,16 +1,40 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using korshi.Models
+@using korshi.Data
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ApplicationDbContext DbContext
+
+@{
+    ApplicationUser? currentUser = null;
+    if (SignInManager.IsSignedIn(User))
+    {
+        currentUser = await UserManager.GetUserAsync(User);
+    }
+
+    var initials = currentUser != null ? currentUser.Initials : "??";
+    var fullName = currentUser != null ? currentUser.FirstName : "Гость";
+    var apartment = currentUser != null && !string.IsNullOrEmpty(currentUser.ApartmentNumber)
+                        ? $"Кв. {currentUser.ApartmentNumber}" : "";
+    var isVerified = currentUser?.IsVerified ?? false;
+    var isAdmin = currentUser != null && await UserManager.IsInRoleAsync(currentUser, "AdminOSI");
+
+    // Загружаем активный баннер из БД
+    var activeBanner = DbContext.Banners
+        .Where(b => b.IsActive && (b.ExpiresAt == null || b.ExpiresAt > DateTime.UtcNow))
+        .OrderByDescending(b => b.CreatedAt)
+        .FirstOrDefault();
+}
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — Körши</title>
+    <title>@ViewData["Title"] — KÖRSHI</title>
 
-    <!-- Google Fonts: Unbounded + Manrope -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -22,16 +46,15 @@
          TOP HEADER
     ══════════════════════════════════════════ -->
     <header class="kw-header">
-        <!-- Left: hamburger + logo + complex badge -->
+
         <div class="kw-header__left">
             <button class="kw-hamburger" id="sidebarToggle" aria-label="Открыть меню">
                 <span></span><span></span><span></span>
             </button>
-            <a href="/" class="kw-logo">Körши</a>
+            <a href="/" class="kw-logo">KÖRSHI</a>
             <span class="kw-complex-badge">ЖК Nurly Tau</span>
         </div>
 
-        <!-- Center: search -->
         <div class="kw-header__center">
             <div class="kw-search">
                 <i class="bi bi-search kw-search__icon"></i>
@@ -39,38 +62,79 @@
             </div>
         </div>
 
-        <!-- Right: weather + bell + avatar -->
         <div class="kw-header__right">
-            <div class="kw-weather">
-                <i class="bi bi-sun kw-weather__icon"></i>
-                <span class="kw-weather__temp">24°C</span>
-                <span class="kw-weather__city">Алматы</span>
+            <!-- Weather widget -->
+            <div class="kw-weather" id="weatherWidget">
+                <i class="bi bi-sun kw-weather__icon" id="weatherIcon"></i>
+                <span class="kw-weather__temp" id="weatherTemp">--°C</span>
+                <span class="kw-weather__city" id="weatherCity">Алматы</span>
             </div>
-            <button class="kw-bell" aria-label="Уведомления">
-                <i class="bi bi-bell"></i>
-                <span class="kw-bell__dot"></span>
-            </button>
-            <div class="kw-avatar kw-avatar--header">АН</div>
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <!-- Bell -->
+                <a href="/Notifications" class="kw-bell" aria-label="Уведомления" style="text-decoration:none;">
+                    <i class="bi bi-bell"></i>
+                    <span class="kw-bell__dot" id="notifDot" style="display:none;"></span>
+                </a>
+
+                <!-- Avatar dropdown -->
+                <div class="kw-header-user" id="headerUserMenu">
+                    <div class="kw-avatar kw-avatar--header" onclick="toggleUserMenu()">@initials</div>
+                    <div class="kw-user-dropdown" id="userDropdown">
+                        <div class="kw-user-dropdown__info">
+                            <div class="kw-user-dropdown__name">@fullName</div>
+                            <div class="kw-user-dropdown__apt">@apartment</div>
+                        </div>
+                        <div class="kw-user-dropdown__divider"></div>
+                        <a href="/Profile" class="kw-user-dropdown__item">
+                            <i class="bi bi-gear"></i> Настройки
+                        </a>
+                        @if (isAdmin)
+                        {
+                            <a href="/Admin" class="kw-user-dropdown__item">
+                                <i class="bi bi-shield-check"></i> Админ-панель
+                            </a>
+                        }
+                        <div class="kw-user-dropdown__divider"></div>
+                        <form asp-action="Logout" asp-controller="Account" method="post" style="margin:0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="kw-user-dropdown__item kw-user-dropdown__item--logout">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a asp-action="Login" asp-controller="Account" class="kw-header-login-btn">
+                    Войти
+                </a>
+            }
         </div>
     </header>
 
     <!-- ══════════════════════════════════════════
-         ALERT BANNER
+         ALERT BANNER — из БД
     ══════════════════════════════════════════ -->
-    @if (ViewData["BannerMessage"] != null)
+    @if (activeBanner != null)
     {
-        var bannerType = ViewData["BannerType"]?.ToString() ?? "info";
-        var bannerClass = bannerType == "emergency" ? "kw-banner kw-banner--emergency" : "kw-banner kw-banner--info";
-        var badgeText = bannerType == "emergency" ? "АВАРИЯ" : "ИНФО";
+        var bannerClass = activeBanner.Type == BannerType.Emergency
+        ? "kw-banner kw-banner--emergency"
+        : "kw-banner kw-banner--info";
+        var badgeText = activeBanner.Type == BannerType.Emergency ? "АВАРИЯ" : "ИНФО";
         <div class="@bannerClass" id="alertBanner" role="alert">
             <div class="kw-banner__left">
                 <span class="kw-banner__dot"></span>
                 <i class="bi bi-exclamation-circle kw-banner__icon"></i>
-                <span class="kw-banner__text">@ViewData["BannerMessage"]</span>
+                <span class="kw-banner__text">@activeBanner.Message</span>
             </div>
             <div class="kw-banner__right">
                 <span class="kw-banner__badge">@badgeText</span>
-                <button class="kw-banner__close" onclick="document.getElementById('alertBanner').remove()" aria-label="Закрыть">
+                <button class="kw-banner__close"
+                        onclick="document.getElementById('alertBanner').remove()"
+                        aria-label="Закрыть">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
@@ -86,16 +150,25 @@
         <aside class="kw-sidebar" id="sidebar">
 
             <!-- User card -->
-            <div class="kw-sidebar__user">
-                <div class="kw-avatar kw-avatar--lg">АН</div>
-                <div class="kw-sidebar__user-info">
-                    <div class="kw-sidebar__username">
-                        Нурлан
-                        <i class="bi bi-check-circle-fill kw-verified"></i>
+            @if (SignInManager.IsSignedIn(User) && currentUser != null)
+            {
+                <div class="kw-sidebar__user">
+                    <div class="kw-avatar kw-avatar--lg">@initials</div>
+                    <div class="kw-sidebar__user-info">
+                        <div class="kw-sidebar__username">
+                            @currentUser.FirstName
+                            @if (isVerified)
+                            {
+                                <i class="bi bi-check-circle-fill kw-verified" title="Верифицирован"></i>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(apartment))
+                        {
+                            <span class="kw-apt-badge">@apartment</span>
+                        }
                     </div>
-                    <span class="kw-apt-badge">Кв. 402</span>
                 </div>
-            </div>
+            }
 
             <nav class="kw-sidebar__nav">
 
@@ -103,7 +176,7 @@
                 <div class="kw-nav-group">
                     <span class="kw-nav-label">ЛЕНТА</span>
 
-                    <a href="/Feed" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "wall" ? "kw-nav-item--active" : "")">
+                    <a href="/" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "wall" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-house-door"></i>
                         <span>Стена</span>
                     </a>
@@ -144,21 +217,46 @@
                         <i class="bi bi-megaphone"></i>
                         <span>Объявления ОСИ</span>
                     </a>
+                    <a href="/Chat" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "chat" ? "kw-nav-item--active" : "")">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Чат</span>
+                    </a>
                 </div>
 
                 <!-- АККАУНТ -->
                 <div class="kw-nav-group">
                     <span class="kw-nav-label">АККАУНТ</span>
 
-                    <a href="/Account/Settings" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "settings" ? "kw-nav-item--active" : "")">
+                    @if (isAdmin)
+                    {
+                        <a href="/Admin" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "admin" ? "kw-nav-item--active" : "")">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Админ-панель</span>
+                        </a>
+                    }
+
+                    <a href="/Profile" class="kw-nav-item @(ViewData["ActiveNav"]?.ToString() == "settings" ? "kw-nav-item--active" : "")">
                         <i class="bi bi-gear"></i>
                         <span>Настройки</span>
                     </a>
 
-                    <a href="/Account/Logout" class="kw-nav-item kw-nav-item--logout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span>Выйти</span>
-                    </a>
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <form asp-action="Logout" asp-controller="Account" method="post" style="margin:0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="kw-nav-item kw-nav-item--logout" style="width:100%; text-align:left; background:none; border:none;">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Выйти</span>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-action="Login" asp-controller="Account" class="kw-nav-item">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Войти</span>
+                        </a>
+                    }
                 </div>
 
             </nav>
@@ -176,11 +274,6 @@
 
     </div>
 
-    <!-- FAB Button -->
-    <button class="kw-fab" aria-label="Создать объявление">
-        <i class="bi bi-plus-lg"></i>
-    </button>
-
     <!-- Toast container -->
     <div class="kw-toast-container" id="toastContainer"></div>
 
@@ -189,5 +282,45 @@
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        // Header user dropdown
+        function toggleUserMenu() {
+            document.getElementById('userDropdown')?.classList.toggle('kw-user-dropdown--open');
+        }
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('headerUserMenu');
+            if (menu && !menu.contains(e.target)) {
+                document.getElementById('userDropdown')?.classList.remove('kw-user-dropdown--open');
+            }
+        });
+
+        // Weather widget
+        async function loadWeather() {
+            try {
+                const res  = await fetch('/Weather/Get?city=Almaty');
+                const data = await res.json();
+                const tempEl = document.getElementById('weatherTemp');
+                const cityEl = document.getElementById('weatherCity');
+                const iconEl = document.getElementById('weatherIcon');
+                if (tempEl) tempEl.textContent = data.temp;
+                if (cityEl) cityEl.textContent = data.city;
+                if (iconEl) iconEl.className   = data.icon + ' kw-weather__icon';
+            } catch(e) { console.log('Weather load failed', e); }
+        }
+        loadWeather();
+
+        // Notification count
+        async function loadNotifCount() {
+            try {
+                const res  = await fetch('/Notifications/Count');
+                const data = await res.json();
+                const dot  = document.getElementById('notifDot');
+                if (dot) dot.style.display = data.count > 0 ? 'block' : 'none';
+            } catch(e) {}
+        }
+        loadNotifCount();
+        setInterval(loadNotifCount, 30000);
+    </script>
 </body>
 </html>

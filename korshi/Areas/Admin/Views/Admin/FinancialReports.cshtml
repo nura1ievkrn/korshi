@@ -1,0 +1,123 @@
+﻿@model List<korshi.Models.FinancialReport>
+@{
+    ViewData["Title"] = "Финансовые отчёты";
+    ViewData["AdminNav"] = "reports";
+}
+
+<div class="adm-page-header">
+    <h1 class="adm-page-title">Финансовые отчёты</h1>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="kw-alert-success" style="margin-bottom:16px;">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="auth-alert" style="margin-bottom:16px;">
+        <i class="bi bi-exclamation-circle"></i> @TempData["Error"]
+    </div>
+}
+
+<!-- Загрузка PDF -->
+<div class="adm-section" style="margin-bottom:20px;">
+    <div class="adm-section__header">
+        <h2 class="adm-section__title">
+            <i class="bi bi-upload" style="color:var(--accent);"></i>
+            Загрузить отчёт
+        </h2>
+    </div>
+
+    <form asp-action="UploadReport" asp-controller="Admin" asp-area="Admin"
+          method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:12px; align-items:end;">
+            <div class="kw-field" style="margin-bottom:0;">
+                <label class="kw-label">Название отчёта</label>
+                <input type="text" name="Title" class="kw-input"
+                       placeholder="Например: Финансовый отчёт за Q1 2025" required />
+            </div>
+            <div class="kw-field" style="margin-bottom:0;">
+                <label class="kw-label">PDF файл</label>
+                <input type="file" name="File" accept=".pdf"
+                       class="kw-input" style="padding:10px 14px;" required />
+            </div>
+        </div>
+
+        <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+            <button type="submit" class="kw-btn-primary">
+                <i class="bi bi-cloud-upload"></i>
+                Загрузить
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Список отчётов -->
+<div class="adm-section">
+    <div class="adm-section__header">
+        <h2 class="adm-section__title">
+            <i class="bi bi-file-earmark-pdf"></i>
+            Загруженные отчёты
+        </h2>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="adm-empty">
+            <i class="bi bi-file-earmark-pdf" style="font-size:36px; opacity:0.3;"></i>
+            <div style="font-size:14px; color:var(--text-muted); margin-top:10px;">Отчётов нет</div>
+        </div>
+    }
+    else
+    {
+        <div class="adm-table-wrap">
+            <table class="adm-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Файл</th>
+                        <th>Размер</th>
+                        <th>Дата</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var report in Model)
+                    {
+                        <tr>
+                            <td style="font-weight:600; font-size:14px;">@report.Title</td>
+                            <td style="font-size:13px; color:var(--text-muted);">
+                                <i class="bi bi-file-earmark-pdf-fill" style="color:#EF4444;"></i>
+                                @report.OriginalName
+                            </td>
+                            <td style="font-size:13px; color:var(--text-muted);">@report.FileSizeFormatted</td>
+                            <td style="font-size:13px; color:var(--text-muted);">
+                                @report.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:6px;">
+                                    <a href="/Reports/Download/@report.Id"
+                                       class="adm-btn adm-btn--neutral adm-btn--sm">
+                                        <i class="bi bi-download"></i> Скачать
+                                    </a>
+                                    <form asp-action="DeleteReport" asp-controller="Admin" asp-area="Admin"
+                                          asp-route-id="@report.Id" method="post"
+                                          onsubmit="return confirm('Удалить отчёт?')" style="margin:0;">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="adm-btn adm-btn--danger adm-btn--sm">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,89 @@
+﻿@model korshi.ViewModels.EditProfileViewModel
+@{
+    ViewData["Title"] = "Редактировать профиль";
+    ViewData["ActiveNav"] = "settings";
+}
+
+<div class="kw-form-page">
+    <div class="kw-form-card">
+
+        <div class="kw-form-card__header">
+            <a href="/Profile" class="kw-back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="kw-form-card__title">Редактировать профиль</h1>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="auth-alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <div>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <form asp-action="Edit" asp-controller="Profile" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <!-- Имя + Фамилия -->
+            <div style="display:flex; gap:14px;">
+                <div class="kw-field" style="flex:1;">
+                    <label asp-for="FirstName" class="kw-label"></label>
+                    <input asp-for="FirstName" class="kw-input" placeholder="Нурлан" />
+                    <span asp-validation-for="FirstName" class="auth-error"></span>
+                </div>
+                <div class="kw-field" style="flex:1;">
+                    <label asp-for="LastName" class="kw-label"></label>
+                    <input asp-for="LastName" class="kw-input" placeholder="Сергеев" />
+                    <span asp-validation-for="LastName" class="auth-error"></span>
+                </div>
+            </div>
+
+            <!-- Телефон -->
+            <div class="kw-field">
+                <label asp-for="PhoneNumber" class="kw-label"></label>
+                <div class="auth-input-wrap">
+                    <i class="bi bi-telephone auth-input-icon"></i>
+                    <input asp-for="PhoneNumber" class="kw-input" style="padding-left:38px;"
+                           placeholder="+7 (700) 000-00-00" />
+                </div>
+                <span asp-validation-for="PhoneNumber" class="auth-error"></span>
+            </div>
+
+            <!-- Адрес + Квартира -->
+            <div style="display:flex; gap:14px;">
+                <div class="kw-field" style="flex:2;">
+                    <label asp-for="Address" class="kw-label"></label>
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-geo-alt auth-input-icon"></i>
+                        <input asp-for="Address" class="kw-input" style="padding-left:38px;"
+                               placeholder="ул. Аль-Фараби, 77" />
+                    </div>
+                    <span asp-validation-for="Address" class="auth-error"></span>
+                </div>
+                <div class="kw-field" style="flex:1;">
+                    <label asp-for="ApartmentNumber" class="kw-label"></label>
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-door-open auth-input-icon"></i>
+                        <input asp-for="ApartmentNumber" class="kw-input" style="padding-left:38px;"
+                               placeholder="402" />
+                    </div>
+                    <span asp-validation-for="ApartmentNumber" class="auth-error"></span>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
+                <a href="/Profile" class="kw-btn-secondary">Отмена</a>
+                <button type="submit" class="kw-btn-primary">
+                    <i class="bi bi-check-lg"></i>
+                    Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

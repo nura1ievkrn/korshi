@@ -1,28 +1,23 @@
 ﻿using korshi.Data;
+using korshi.Hubs;
 using korshi.Models;
+using korshi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── EF Core + SQL Server ─────────────────────────────────
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ── ASP.NET Core Identity ────────────────────────────────
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
-    // Пароль
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
-
-    // Логин
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedAccount = false;
-
-    // Локаут
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
 })
@@ -30,7 +25,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddDefaultTokenProviders()
 .AddErrorDescriber<RussianIdentityErrorDescriber>();
 
-// ── Cookie ───────────────────────────────────────────────
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -40,12 +34,21 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-// ── MVC ──────────────────────────────────────────────────
 builder.Services.AddControllersWithViews();
+
+// ── SignalR ──────────────────────────────────────────────
+builder.Services.AddSignalR();
+
+// ── Сервисы ──────────────────────────────────────────────
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<PollService>();
+builder.Services.AddScoped<ServiceRequestService>();
+builder.Services.AddScoped<ChatService>();
+builder.Services.AddHttpClient<WeatherService>();
 
 var app = builder.Build();
 
-// ── Seed roles + admin ───────────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -59,7 +62,6 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
 
-    // Создаём суперадмина если не существует
     const string adminEmail = "admin@korshi.kz";
     if (await userManager.FindByEmailAsync(adminEmail) == null)
     {
@@ -82,7 +84,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ── Middleware ───────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -94,6 +95,19 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ── SignalR Hub ──────────────────────────────────────────
+app.MapHub<ChatHub>("/chatHub");
+
+// ── Маршруты ─────────────────────────────────────────────
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Admin}/{action=Index}/{id?}");
+
+app.MapControllerRoute(
+    name: "chat",
+    pattern: "Chat/Open/{userId}",
+    defaults: new { controller = "Chat", action = "Open" });
 
 app.MapControllerRoute(
     name: "default",

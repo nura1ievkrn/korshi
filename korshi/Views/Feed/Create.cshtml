@@ -1,0 +1,79 @@
+﻿@model korshi.ViewModels.CreatePostViewModel
+@{
+    ViewData["Title"] = "Создать пост";
+    ViewData["ActiveNav"] = "wall";
+}
+
+<div class="kw-form-page">
+    <div class="kw-form-card">
+
+        <div class="kw-form-card__header">
+            <a href="/Feed" class="kw-back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="kw-form-card__title">Новое объявление</h1>
+        </div>
+
+        <form asp-action="Create" asp-controller="Feed" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <!-- Ошибки -->
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="auth-alert">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <div>
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Категория — карточки с выбором (без Голосований) -->
+            <div class="kw-field">
+                <label class="kw-label">Категория</label>
+                <div class="kw-cat-picker">
+                    @foreach (var cat in Model.Categories.Where(c => c.Slug != "poll"))
+                    {
+                        <label class="kw-cat-option">
+                            <input type="radio" name="CategoryId" value="@cat.Id"
+                                   @(Model.CategoryId == cat.Id ? "checked" : "") />
+                            <div class="kw-cat-option__card" style="--cat-color: @cat.Color">
+                                <i class="@cat.Icon"></i>
+                                <span>@cat.Name</span>
+                            </div>
+                        </label>
+                    }
+                </div>
+                <span asp-validation-for="CategoryId" class="auth-error"></span>
+            </div>
+
+            <!-- Заголовок -->
+            <div class="kw-field">
+                <label asp-for="Title" class="kw-label"></label>
+                <input asp-for="Title" class="kw-input"
+                       placeholder="Например: Продаю диван в хорошем состоянии" />
+                <span asp-validation-for="Title" class="auth-error"></span>
+            </div>
+
+            <!-- Текст -->
+            <div class="kw-field">
+                <label asp-for="Content" class="kw-label"></label>
+                <textarea asp-for="Content" class="kw-textarea" rows="6"
+                          placeholder="Подробно опишите ваше объявление..."></textarea>
+                <span asp-validation-for="Content" class="auth-error"></span>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:flex-end;">
+                <a href="/Feed" class="kw-btn-secondary">Отмена</a>
+                <button type="submit" class="kw-btn-primary">
+                    <i class="bi bi-send"></i>
+                    Опубликовать
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

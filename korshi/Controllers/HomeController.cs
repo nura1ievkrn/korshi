@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using korshi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace korshi.Controllers
@@ -15,18 +16,20 @@ namespace korshi.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            if (User.Identity?.IsAuthenticated == true)
+                return RedirectToAction("Index", "Feed");
+
+            return RedirectToAction("Login", "Account");
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            return View(new ErrorViewModel
+            {
+                RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+            });
         }
     }
 }

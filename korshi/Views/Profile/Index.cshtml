@@ -1,0 +1,153 @@
+﻿@model korshi.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = Model.User.FullName;
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var isOwn = currentUserId == Model.User.Id;
+}
+
+<div class="prof-page">
+
+    <!-- Шапка профиля -->
+    <div class="prof-header">
+        <div class="prof-header__left">
+            <div class="prof-avatar">@Model.User.Initials</div>
+            <div class="prof-info">
+                <div class="prof-name">
+                    @Model.User.FullName
+                    @if (Model.User.IsVerified)
+                    {
+                        <i class="bi bi-check-circle-fill" style="color:#10B981; font-size:16px;"></i>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(Model.User.ApartmentNumber))
+                {
+                    <div class="prof-meta-item">
+                        <i class="bi bi-door-open"></i>
+                        Квартира @Model.User.ApartmentNumber
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.User.Address))
+                {
+                    <div class="prof-meta-item">
+                        <i class="bi bi-geo-alt"></i>
+                        @Model.User.Address
+                    </div>
+                }
+                <div class="prof-meta-item">
+                    <i class="bi bi-calendar3"></i>
+                    На сайте с @Model.User.CreatedAt.ToLocalTime().ToString("MMMM yyyy")
+                </div>
+            </div>
+        </div>
+
+        @if (isOwn)
+        {
+            <div class="prof-header__actions">
+                <a href="/Profile/Edit" class="kw-btn-primary">
+                    <i class="bi bi-pencil"></i>
+                    Редактировать
+                </a>
+                <a href="/Profile/ChangePassword" class="kw-btn-secondary">
+                    <i class="bi bi-lock"></i>
+                    Пароль
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- Статистика -->
+    <div class="prof-stats">
+        <div class="prof-stat">
+            <div class="prof-stat__num">@Model.MyPosts.Count</div>
+            <div class="prof-stat__label">Публикаций</div>
+        </div>
+        <div class="prof-stat">
+            <div class="prof-stat__num">@Model.LikedPosts.Count</div>
+            <div class="prof-stat__label">Понравилось</div>
+        </div>
+        <div class="prof-stat">
+            <div class="prof-stat__num">@Model.MyPosts.Sum(p => p.LikesCount)</div>
+            <div class="prof-stat__label">Лайков получено</div>
+        </div>
+        <div class="prof-stat">
+            <div class="prof-stat__num">@Model.MyPosts.Sum(p => p.CommentsCount)</div>
+            <div class="prof-stat__label">Комментариев</div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="kw-alert-success">
+            <i class="bi bi-check-circle"></i> @TempData["Success"]
+        </div>
+    }
+
+    <!-- Табы -->
+    <div class="kw-tabs" style="margin-top:8px;">
+        <a href="/Profile?tab=posts"
+           class="kw-tab @(Model.ActiveTab == "posts" ? "kw-tab--active" : "")">
+            Мои посты
+            <span class="prof-tab-count">@Model.MyPosts.Count</span>
+        </a>
+        <a href="/Profile?tab=liked"
+           class="kw-tab @(Model.ActiveTab == "liked" ? "kw-tab--active" : "")">
+            Мне понравилось
+            <span class="prof-tab-count">@Model.LikedPosts.Count</span>
+        </a>
+    </div>
+
+    <!-- Посты -->
+    @{
+        var posts = Model.ActiveTab == "liked" ? Model.LikedPosts : Model.MyPosts;
+    }
+
+    @if (!posts.Any())
+    {
+        <div class="kw-empty" style="padding:48px 20px;">
+            <i class="bi @(Model.ActiveTab == "liked" ? "bi-heart" : "bi-file-text")"
+               style="font-size:40px; color:var(--text-muted); opacity:0.3;"></i>
+            <div style="font-size:15px; font-weight:600; color:var(--text-muted); margin-top:12px;">
+                @(Model.ActiveTab == "liked" ? "Нет понравившихся постов" : "Нет публикаций")
+            </div>
+            @if (isOwn && Model.ActiveTab == "posts")
+            {
+                <a href="/Feed/Create" class="kw-btn-create" style="margin-top:16px;">
+                    Создать первый пост
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="kw-grid" style="margin-top:16px;">
+            @foreach (var post in posts)
+            {
+                var catSlug = post.Category?.Slug ?? "wall";
+                <div class="kw-card kw-card--@catSlug">
+                    <div class="kw-card__body">
+                        <div class="kw-cat-tag kw-cat-tag--@catSlug">@post.Category?.Name</div>
+                        <a href="/Feed/Detail/@post.Id" style="text-decoration:none;">
+                            <div class="kw-card__title">@post.Title</div>
+                            <div class="kw-card__excerpt">@post.Content</div>
+                        </a>
+                        <div class="kw-card__footer">
+                            <span class="kw-card__stat">
+                                <i class="bi bi-heart-fill" style="color:#EF4444;"></i>
+                                @post.LikesCount
+                            </span>
+                            <span class="kw-card__stat">
+                                <i class="bi bi-chat"></i>
+                                @post.CommentsCount
+                            </span>
+                            <span class="kw-card__stat" style="margin-left:auto; font-size:11px;">
+                                @post.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>

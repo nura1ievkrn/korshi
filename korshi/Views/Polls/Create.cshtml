@@ -1,0 +1,93 @@
+﻿@model korshi.ViewModels.CreatePollViewModel
+@{
+    ViewData["Title"] = "Создать голосование";
+    ViewData["ActiveNav"] = "polls";
+}
+
+<div class="kw-form-page">
+    <div class="kw-form-card">
+
+        <div class="kw-form-card__header">
+            <a href="/Polls" class="kw-back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h1 class="kw-form-card__title">Новое голосование</h1>
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="auth-alert">
+                <i class="bi bi-exclamation-circle"></i>
+                <div>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <form asp-action="Create" asp-controller="Polls" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <!-- Вопрос -->
+            <div class="kw-field">
+                <label asp-for="Question" class="kw-label"></label>
+                <input asp-for="Question" class="kw-input"
+                       placeholder="Например: Установить шлагбаум во дворе?" />
+                <span asp-validation-for="Question" class="auth-error"></span>
+            </div>
+
+            <!-- Дата окончания -->
+            <div class="kw-field">
+                <label asp-for="EndDate" class="kw-label"></label>
+                <input asp-for="EndDate" type="datetime-local" class="kw-input"
+                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                <span asp-validation-for="EndDate" class="auth-error"></span>
+            </div>
+
+            <!-- Варианты ответов -->
+            <div class="kw-field">
+                <label class="kw-label">Варианты ответов</label>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+
+                    <div class="poll-option-input">
+                        <span class="poll-option-num">1</span>
+                        <input asp-for="Option1" class="kw-input" placeholder="Вариант 1" />
+                    </div>
+                    <span asp-validation-for="Option1" class="auth-error"></span>
+
+                    <div class="poll-option-input">
+                        <span class="poll-option-num">2</span>
+                        <input asp-for="Option2" class="kw-input" placeholder="Вариант 2" />
+                    </div>
+                    <span asp-validation-for="Option2" class="auth-error"></span>
+
+                    <div class="poll-option-input">
+                        <span class="poll-option-num" style="opacity:0.5;">3</span>
+                        <input asp-for="Option3" class="kw-input" placeholder="Вариант 3 (необязательно)" />
+                    </div>
+
+                    <div class="poll-option-input">
+                        <span class="poll-option-num" style="opacity:0.5;">4</span>
+                        <input asp-for="Option4" class="kw-input" placeholder="Вариант 4 (необязательно)" />
+                    </div>
+
+                    <div class="poll-option-input">
+                        <span class="poll-option-num" style="opacity:0.5;">5</span>
+                        <input asp-for="Option5" class="kw-input" placeholder="Вариант 5 (необязательно)" />
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:8px;">
+                <a href="/Polls" class="kw-btn-secondary">Отмена</a>
+                <button type="submit" class="kw-btn-primary">
+                    <i class="bi bi-bar-chart-line"></i>
+                    Создать голосование
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

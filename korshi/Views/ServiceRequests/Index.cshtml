@@ -1,0 +1,120 @@
+﻿@model korshi.ViewModels.ServiceRequestsIndexViewModel
+@{
+    ViewData["Title"] = "Заявки на ремонт";
+    ViewData["ActiveNav"] = "requests";
+}
+
+<!-- Заголовок -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <h1 style="font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; margin:0;">
+        Мои заявки
+    </h1>
+    <a href="/ServiceRequests/Create" class="kw-btn-create">
+        <i class="bi bi-plus-lg"></i>
+        Новая заявка
+    </a>
+</div>
+
+<!-- Уведомления -->
+@if (TempData["Success"] != null)
+{
+    <div class="kw-alert-success" style="margin-bottom:16px;">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+    </div>
+}
+
+<!-- Фильтры -->
+<div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+    <a href="/ServiceRequests" class="sr-filter-btn @(Model.Filter == "all" ? "sr-filter-btn--active" : "")">
+        Все
+    </a>
+    <a href="/ServiceRequests?filter=new" class="sr-filter-btn @(Model.Filter == "new" ? "sr-filter-btn--active" : "")">
+        <span class="sr-dot sr-dot--new"></span> Новые
+    </a>
+    <a href="/ServiceRequests?filter=inprocess" class="sr-filter-btn @(Model.Filter == "inprocess" ? "sr-filter-btn--active" : "")">
+        <span class="sr-dot sr-dot--process"></span> В работе
+    </a>
+    <a href="/ServiceRequests?filter=done" class="sr-filter-btn @(Model.Filter == "done" ? "sr-filter-btn--active" : "")">
+        <span class="sr-dot sr-dot--done"></span> Выполнены
+    </a>
+</div>
+
+<!-- Пустой стейт -->
+@if (!Model.Requests.Any())
+{
+    <div class="kw-empty">
+        <i class="bi bi-wrench" style="font-size:48px; color:var(--text-muted); opacity:0.3;"></i>
+        <div style="font-size:15px; font-weight:600; color:var(--text-muted); margin-top:12px;">
+            Заявок пока нет
+        </div>
+        <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">
+            Создайте заявку если что-то сломалось
+        </div>
+        <a href="/ServiceRequests/Create" class="kw-btn-create" style="margin-top:16px;">
+            Создать заявку
+        </a>
+    </div>
+}
+else
+{
+    <div class="sr-list">
+        @foreach (var req in Model.Requests)
+        {
+            <div class="sr-card">
+                <div class="sr-card__left">
+
+                    <!-- Иконка услуги -->
+                    <div class="sr-card__icon" style="background:@(req.Service?.Color ?? "#6B7280")18; color:@(req.Service?.Color ?? "#6B7280");">
+                        <i class="@(req.Service?.Icon ?? "bi-wrench")"></i>
+                    </div>
+
+                    <div class="sr-card__body">
+                        <div class="sr-card__title">@req.Title</div>
+                        <div class="sr-card__service">
+                            @(req.Service?.Name ?? "Другое")
+                        </div>
+                        <div class="sr-card__desc">@req.Description</div>
+                        @if (!string.IsNullOrEmpty(req.AdminNote))
+                        {
+                            <div class="sr-card__note">
+                                <i class="bi bi-chat-left-text"></i>
+                                @req.AdminNote
+                            </div>
+                        }
+                        <div class="sr-card__date">
+                            <i class="bi bi-clock"></i>
+                            @req.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, HH:mm")
+                            @if (req.UpdatedAt.HasValue)
+                            {
+                                <span style="margin-left:8px; color:var(--text-muted);">
+                                    · Обновлено @req.UpdatedAt.Value.ToLocalTime().ToString("dd MMM, HH:mm")
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sr-card__right">
+                    <!-- Статус -->
+                    <span class="sr-status sr-status--@req.Status.ToString().ToLower()">
+                        @req.StatusLabel
+                    </span>
+
+                    <!-- Удалить (только новые) -->
+                    @if (req.Status == korshi.Models.ServiceRequestStatus.New)
+                    {
+                        <form asp-action="Delete" asp-controller="ServiceRequests"
+                              asp-route-id="@req.Id" method="post"
+                              onsubmit="return confirm('Удалить заявку?')"
+                              style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="kw-icon-btn kw-icon-btn--danger" title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

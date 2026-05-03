@@ -1,0 +1,221 @@
+﻿@model korshi.ViewModels.FeedViewModel
+@{
+    ViewData["Title"] = "Лента";
+    ViewData["ActiveNav"] = "wall";
+}
+
+@section RightPanel {
+    <div class="kw-panel-card">
+        <div class="kw-panel-card__title">
+            <i class="bi bi-bar-chart-line"></i>
+            Активные голосования
+        </div>
+        @if (!Model.TopPolls.Any())
+        {
+            <div style="font-size:13px; color:var(--text-muted); text-align:center; padding:10px 0;">
+                Голосований пока нет
+            </div>
+        }
+        else
+        {
+            @foreach (var poll in Model.TopPolls)
+            {
+                var totalVotes = poll.TotalVotes;
+                var topOption = poll.Options.OrderByDescending(o => o.VoteCount).FirstOrDefault();
+                var pct = totalVotes > 0 && topOption != null
+                ? (int)Math.Round((double)topOption.VoteCount / totalVotes * 100)
+                : 0;
+                <div class="kw-poll-item">
+                    <div class="kw-poll-item__question">@poll.Question</div>
+                    <div class="kw-progress">
+                        <div class="kw-progress__fill" style="width:@pct%"></div>
+                    </div>
+                    <div class="kw-poll-meta">@totalVotes голосов</div>
+                    <a href="/Polls" class="kw-btn-vote">Проголосовать</a>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="kw-panel-card">
+        <div class="kw-panel-card__title">
+            <i class="bi bi-calendar3"></i>
+            Категории
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            @foreach (var cat in Model.Categories)
+            {
+                var color18 = cat.Color + "18";
+                var isActive = Model.ActiveSlug == cat.Slug;
+                <a href="/Feed?category=@cat.Slug"
+                   style="display:flex; align-items:center; gap:8px; padding:6px 8px;
+                                  border-radius:8px; font-size:13px; font-weight:500;
+                                  color:var(--text-primary); transition:background 0.15s;
+                                  background:@(isActive? color18 : "transparent")"
+                   onmouseover="this.style.background='@color18'"
+                   onmouseout="this.style.background='@(isActive? color18 : "transparent")'">
+                    <i class="@cat.Icon" style="color:@cat.Color; font-size:15px;"></i>
+                    @cat.Name
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Предстоящие события -->
+    <div class="kw-panel-card">
+        <div class="kw-panel-card__title">
+            <i class="bi bi-calendar3"></i>
+            Предстоящие события
+        </div>
+        @{
+            var events = (ViewBag.UpcomingEvents as List<korshi.Models.Event>) ?? new List<korshi.Models.Event>();
+        }
+        @if (!events.Any())
+        {
+            <div style="font-size:13px; color:var(--text-muted); text-align:center; padding:8px 0;">
+                Событий пока нет
+            </div>
+        }
+        else
+        {
+            <div class="kw-events">
+                @foreach (var ev in events)
+                {
+                    <div class="kw-event-item">
+                        <span class="kw-event-date">
+                            @ev.EventDate.ToLocalTime().ToString("dd MMM")
+                        </span>
+                        <span class="kw-event-title">@ev.Title</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+<!-- TempData уведомление -->
+@if (TempData["Success"] != null)
+{
+    <div class="kw-alert-success">
+        <i class="bi bi-check-circle"></i>
+        @TempData["Success"]
+    </div>
+}
+
+<!-- Фильтр-табы -->
+<div class="kw-tabs">
+    <a href="/Feed" class="kw-tab @(Model.ActiveSlug == "all" ? "kw-tab--active" : "")">Все</a>
+    @foreach (var cat in Model.Categories)
+    {
+        <a href="/Feed?category=@cat.Slug"
+           class="kw-tab @(Model.ActiveSlug == cat.Slug ? "kw-tab--active" : "")">
+            @cat.Name
+        </a>
+    }
+</div>
+
+<!-- Тулбар -->
+<div class="kw-feed-toolbar">
+    <span class="kw-feed-count">@Model.Posts.Count объявлений</span>
+    <a href="/Feed/Create" class="kw-btn-create">
+        <i class="bi bi-plus-lg"></i>
+        Создать пост
+    </a>
+</div>
+
+<!-- Сетка карточек -->
+@if (!Model.Posts.Any())
+{
+    <div class="kw-empty">
+        <i class="bi bi-inbox" style="font-size:48px; color:var(--text-muted); opacity:0.4;"></i>
+        <div style="font-size:15px; font-weight:600; color:var(--text-muted); margin-top:12px;">Постов пока нет</div>
+        <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Будьте первым — создайте объявление</div>
+        <a href="/Feed/Create" class="kw-btn-create" style="margin-top:16px;">Создать пост</a>
+    </div>
+}
+else
+{
+    <div class="kw-grid">
+        @foreach (var post in Model.Posts)
+        {
+            var catSlug = post.Category?.Slug ?? "wall";
+            var catColor = post.Category?.Color ?? "#6B7280";
+            var isLiked = Model.LikedPostIds.Contains(post.Id);
+
+            <div class="kw-card kw-card--@catSlug">
+                <div class="kw-card__body">
+
+                    <!-- Заголовок карточки -->
+                    <div class="kw-card__header">
+                        <div class="kw-avatar" style="font-size:12px;">
+                            @post.User?.Initials
+                        </div>
+                        <div class="kw-card__meta">
+                            <div class="kw-card__name">
+                                @post.User?.FirstName @post.User?.LastName
+                                @if (post.User?.IsVerified == true)
+                                {
+                                    <i class="bi bi-check-circle-fill kw-card__verified"></i>
+                                }
+                                @if (!string.IsNullOrEmpty(post.User?.ApartmentNumber))
+                                {
+                                    <span class="kw-apt-badge" style="margin-left:4px;">
+                                        кв. @post.User.ApartmentNumber
+                                    </span>
+                                }
+                            </div>
+                            <div class="kw-card__time">@TimeAgo(post.CreatedAt)</div>
+                        </div>
+                    </div>
+
+                    <!-- Категория -->
+                    <div class="kw-cat-tag kw-cat-tag--@catSlug">
+                        @post.Category?.Name
+                    </div>
+
+                    <!-- Заголовок и текст -->
+                    <a href="/Feed/Detail/@post.Id" style="text-decoration:none;">
+                        <div class="kw-card__title">@post.Title</div>
+                        <div class="kw-card__excerpt">@post.Content</div>
+                    </a>
+
+                    <!-- Футер: лайк + комментарии -->
+                    <div class="kw-card__footer">
+
+                        <!-- Лайк -->
+                        <form asp-action="Like" asp-controller="Feed"
+                              asp-route-id="@post.Id"
+                              asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString"
+                              method="post" style="margin:0;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="kw-card__stat kw-like-btn @(isLiked ? "kw-like-btn--active" : "")"
+                                    title="@(isLiked ? "Убрать лайк" : "Нравится")">
+                                <i class="bi @(isLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                                @post.LikesCount
+                            </button>
+                        </form>
+
+                        <!-- Комментарии -->
+                        <a href="/Feed/Detail/@post.Id#comments" class="kw-card__stat">
+                            <i class="bi bi-chat"></i>
+                            @post.CommentsCount
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@functions {
+    string TimeAgo(DateTime dt)
+    {
+        var diff = DateTime.UtcNow - dt;
+        if (diff.TotalMinutes < 1) return "только что";
+        if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} мин назад";
+        if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} ч назад";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays} дн назад";
+        return dt.ToLocalTime().ToString("dd MMM yyyy");
+    }
+}

@@ -1,0 +1,51 @@
+﻿@model List<korshi.Models.FinancialReport>
+@{
+    ViewData["Title"] = "Финансовые отчёты";
+    ViewData["ActiveNav"] = "reports";
+}
+
+<div style="display:flex; align-items:center; margin-bottom:20px;">
+    <h1 style="font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; margin:0;">
+        Финансовые отчёты
+    </h1>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="kw-empty">
+        <i class="bi bi-file-earmark-pdf" style="font-size:48px; color:var(--text-muted); opacity:0.3;"></i>
+        <div style="font-size:15px; font-weight:600; color:var(--text-muted); margin-top:12px;">
+            Отчётов пока нет
+        </div>
+        <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">
+            Председатель ОСИ опубликует отчёты здесь
+        </div>
+    </div>
+}
+else
+{
+    <div style="display:flex; flex-direction:column; gap:10px; max-width:720px;">
+        @foreach (var report in Model)
+        {
+            <div class="report-card">
+                <div class="report-card__icon">
+                    <i class="bi bi-file-earmark-pdf-fill" style="color:#EF4444; font-size:28px;"></i>
+                </div>
+                <div class="report-card__body">
+                    <div class="report-card__title">@report.Title</div>
+                    <div class="report-card__meta">
+                        <span>@report.OriginalName</span>
+                        <span>·</span>
+                        <span>@report.FileSizeFormatted</span>
+                        <span>·</span>
+                        <span>@report.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")</span>
+                    </div>
+                </div>
+                <a href="/Reports/Download/@report.Id" class="kw-btn-primary" style="flex-shrink:0;">
+                    <i class="bi bi-download"></i>
+                    Скачать
+                </a>
+            </div>
+        }
+    </div>
+}

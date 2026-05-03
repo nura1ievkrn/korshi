@@ -1,0 +1,153 @@
+﻿@model List<korshi.Models.ServiceRequest>
+@{
+    ViewData["Title"] = "Заявки на ремонт";
+    ViewData["AdminNav"] = "requests";
+
+    var newReqs = Model.Where(r => r.Status == korshi.Models.ServiceRequestStatus.New).ToList();
+    var inProcessReqs = Model.Where(r => r.Status == korshi.Models.ServiceRequestStatus.InProcess).ToList();
+    var doneReqs = Model.Where(r => r.Status == korshi.Models.ServiceRequestStatus.Done).ToList();
+}
+
+<div class="adm-page-header">
+    <h1 class="adm-page-title">Заявки на ремонт</h1>
+    <div style="display:flex; gap:8px;">
+        <span class="adm-badge adm-badge--blue">Новых: @newReqs.Count</span>
+        <span class="adm-badge adm-badge--yellow">В работе: @inProcessReqs.Count</span>
+        <span class="adm-badge adm-badge--green">Выполнено: @doneReqs.Count</span>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="kw-alert-success" style="margin-bottom:16px;">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+    </div>
+}
+
+<!-- Канбан -->
+<div class="kanban">
+
+    <!-- Новые -->
+    <div class="kanban-col">
+        <div class="kanban-col__header kanban-col__header--new">
+            <i class="bi bi-circle"></i> Новые
+            <span class="kanban-col__count">@newReqs.Count</span>
+        </div>
+        @foreach (var req in newReqs)
+        {
+            <div class="kanban-card">
+                <div class="kanban-card__top">
+                    <span class="kanban-card__service">
+                        <i class="@(req.Service?.Icon ?? "bi-wrench")" style="color:@(req.Service?.Color ?? "#6B7280");"></i>
+                        @(req.Service?.Name ?? "Другое")
+                    </span>
+                    <span class="kanban-card__apt">
+                        кв. @req.User?.ApartmentNumber
+                    </span>
+                </div>
+                <div class="kanban-card__title">@req.Title</div>
+                <div class="kanban-card__desc">@req.Description</div>
+                <div class="kanban-card__user">
+                    <i class="bi bi-person"></i> @req.User?.FullName
+                </div>
+                <div class="kanban-card__date">
+                    @req.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")
+                </div>
+                <div class="kanban-card__actions">
+                    <form asp-action="UpdateStatus" asp-controller="Admin" asp-area="Admin" method="post" style="margin:0;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="RequestId" value="@req.Id" />
+                        <input type="hidden" name="Status" value="1" />
+                        <button type="submit" class="adm-btn adm-btn--neutral adm-btn--sm" style="width:100%;">
+                            <i class="bi bi-arrow-right"></i> В работу
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+        @if (!newReqs.Any())
+        {
+            <div class="kanban-empty">Нет новых заявок</div>
+        }
+    </div>
+
+    <!-- В работе -->
+    <div class="kanban-col">
+        <div class="kanban-col__header kanban-col__header--process">
+            <i class="bi bi-arrow-repeat"></i> В работе
+            <span class="kanban-col__count">@inProcessReqs.Count</span>
+        </div>
+        @foreach (var req in inProcessReqs)
+        {
+            <div class="kanban-card">
+                <div class="kanban-card__top">
+                    <span class="kanban-card__service">
+                        <i class="@(req.Service?.Icon ?? "bi-wrench")" style="color:@(req.Service?.Color ?? "#6B7280");"></i>
+                        @(req.Service?.Name ?? "Другое")
+                    </span>
+                    <span class="kanban-card__apt">кв. @req.User?.ApartmentNumber</span>
+                </div>
+                <div class="kanban-card__title">@req.Title</div>
+                <div class="kanban-card__desc">@req.Description</div>
+                <div class="kanban-card__user">
+                    <i class="bi bi-person"></i> @req.User?.FullName
+                </div>
+                <div class="kanban-card__date">
+                    @req.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")
+                </div>
+                <!-- Заметка админа -->
+                <form asp-action="UpdateStatus" asp-controller="Admin" asp-area="Admin" method="post" style="margin:0;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="RequestId" value="@req.Id" />
+                    <input type="hidden" name="Status" value="2" />
+                    <input type="text" name="AdminNote" class="kw-input"
+                           style="height:34px; font-size:12px; margin-bottom:6px;"
+                           placeholder="Комментарий (необязательно)"
+                           value="@req.AdminNote" />
+                    <button type="submit" class="adm-btn adm-btn--success adm-btn--sm" style="width:100%;">
+                        <i class="bi bi-check-lg"></i> Выполнено
+                    </button>
+                </form>
+            </div>
+        }
+        @if (!inProcessReqs.Any())
+        {
+            <div class="kanban-empty">Нет заявок в работе</div>
+        }
+    </div>
+
+    <!-- Выполнены -->
+    <div class="kanban-col">
+        <div class="kanban-col__header kanban-col__header--done">
+            <i class="bi bi-check-circle"></i> Выполнены
+            <span class="kanban-col__count">@doneReqs.Count</span>
+        </div>
+        @foreach (var req in doneReqs.Take(10))
+        {
+            <div class="kanban-card kanban-card--done">
+                <div class="kanban-card__top">
+                    <span class="kanban-card__service">
+                        <i class="@(req.Service?.Icon ?? "bi-wrench")" style="color:@(req.Service?.Color ?? "#6B7280");"></i>
+                        @(req.Service?.Name ?? "Другое")
+                    </span>
+                    <span class="kanban-card__apt">кв. @req.User?.ApartmentNumber</span>
+                </div>
+                <div class="kanban-card__title">@req.Title</div>
+                @if (!string.IsNullOrEmpty(req.AdminNote))
+                {
+                    <div class="kanban-card__note">
+                        <i class="bi bi-chat-left-text"></i> @req.AdminNote
+                    </div>
+                }
+                <div class="kanban-card__date">
+                    Выполнено: @req.UpdatedAt?.ToLocalTime().ToString("dd MMM, HH:mm")
+                </div>
+            </div>
+        }
+        @if (!doneReqs.Any())
+        {
+            <div class="kanban-empty">Нет выполненных заявок</div>
+        }
+    </div>
+
+</div>

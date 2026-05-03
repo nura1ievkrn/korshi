@@ -1,0 +1,175 @@
+﻿@model korshi.ViewModels.PollsIndexViewModel
+@{
+    ViewData["Title"] = "Голосования";
+    ViewData["ActiveNav"] = "polls";
+}
+
+<!-- Заголовок -->
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <h1 style="font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; margin:0;">
+        Голосования
+    </h1>
+    <a href="/Polls/Create" class="kw-btn-create">
+        <i class="bi bi-plus-lg"></i>
+        Создать голосование
+    </a>
+</div>
+
+<!-- Уведомления -->
+@if (TempData["Success"] != null)
+{
+    <div class="kw-alert-success" style="margin-bottom:16px;">
+        <i class="bi bi-check-circle"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="auth-alert" style="margin-bottom:16px;">
+        <i class="bi bi-exclamation-circle"></i> @TempData["Error"]
+    </div>
+}
+
+<!-- Пустой стейт -->
+@if (!Model.Polls.Any())
+{
+    <div class="kw-empty">
+        <i class="bi bi-bar-chart-line" style="font-size:48px; color:var(--text-muted); opacity:0.3;"></i>
+        <div style="font-size:15px; font-weight:600; color:var(--text-muted); margin-top:12px;">
+            Голосований пока нет
+        </div>
+        <a href="/Polls/Create" class="kw-btn-create" style="margin-top:16px;">
+            Создать первое голосование
+        </a>
+    </div>
+}
+else
+{
+    <div class="polls-grid">
+        @foreach (var item in Model.Polls)
+        {
+            var poll = item.Poll;
+            var totalVotes = poll.TotalVotes;
+
+            <div class="poll-card">
+
+                <!-- Заголовок карточки -->
+                <div class="poll-card__header">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="kw-avatar" style="width:32px;height:32px;font-size:11px;flex-shrink:0;">
+                            @poll.User?.Initials
+                        </div>
+                        <div>
+                            <div style="font-size:13px; font-weight:600; color:var(--text-primary);">
+                                @poll.User?.FirstName @poll.User?.LastName
+                            </div>
+                            <div style="font-size:11px; color:var(--text-muted);">
+                                @poll.CreatedAt.ToLocalTime().ToString("dd MMM yyyy")
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Статус -->
+                    @if (poll.IsExpired)
+                    {
+                        <span class="poll-badge poll-badge--closed">Завершено</span>
+                    }
+                    else
+                    {
+                        <span class="poll-badge poll-badge--active">
+                            до @poll.EndDate.ToLocalTime().ToString("dd MMM")
+                        </span>
+                    }
+                </div>
+
+                <!-- Вопрос -->
+                <div class="poll-card__question">@poll.Question</div>
+
+                <!-- Варианты -->
+                @if (item.CanVote)
+                {
+                    <!-- Форма голосования -->
+                    <form asp-action="Vote" asp-controller="Polls" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="pollId" value="@poll.Id" />
+
+                        <div class="poll-options">
+                            @foreach (var option in poll.Options)
+                            {
+                                <label class="poll-option">
+                                    <input type="radio" name="optionId" value="@option.Id" required />
+                                    <div class="poll-option__card">
+                                        <div class="poll-option__radio"></div>
+                                        <span class="poll-option__text">@option.Text</span>
+                                    </div>
+                                </label>
+                            }
+                        </div>
+
+                        <button type="submit" class="kw-btn-primary" style="width:100%; justify-content:center; margin-top:14px;">
+                            <i class="bi bi-check-lg"></i>
+                            Проголосовать
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <!-- Результаты -->
+                    <div class="poll-results">
+                        @foreach (var option in poll.Options.OrderByDescending(o => o.VoteCount))
+                        {
+                            var pct = totalVotes > 0 ? (int)Math.Round((double)option.VoteCount / totalVotes * 100) : 0;
+                            var isVoted = item.UserVoteId == option.Id;
+
+                            <div class="poll-result-item @(isVoted ? "poll-result-item--voted" : "")">
+                                <div class="poll-result-item__top">
+                                    <span class="poll-result-item__text">
+                                        @if (isVoted)
+                                        {
+                                            <i class="bi bi-check-circle-fill" style="color:#E8450A;"></i>
+                                        }
+                                        @option.Text
+                                    </span>
+                                    <span class="poll-result-item__pct">@pct%</span>
+                                </div>
+                                <div class="kw-progress">
+                                    <div class="kw-progress__fill @(isVoted ? "" : "kw-progress__fill--gray")"
+                                         style="width:@pct%"></div>
+                                </div>
+                                <div class="poll-result-item__votes">@option.VoteCount голосов</div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="poll-card__footer">
+                        <span><i class="bi bi-people"></i> @totalVotes голосов</span>
+                        @if (item.HasVoted)
+                        {
+                            <span style="color:#10B981;">
+                                <i class="bi bi-check-circle-fill"></i> Вы проголосовали
+                            </span>
+                        }
+                    </div>
+                }
+
+                <!-- Удалить (создатель или админ) -->
+                @{
+                    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                }
+                @if (currentUserId == poll.UserId || User.IsInRole("AdminOSI"))
+                {
+                    <form asp-action="Delete" asp-controller="Polls"
+                          asp-route-id="@poll.Id" method="post"
+                          onsubmit="return confirm('Удалить голосование?')"
+                          style="margin-top:10px;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="kw-btn-secondary"
+                                style="width:100%; justify-content:center; font-size:12px; height:32px;">
+                            <i class="bi bi-trash"></i> Удалить
+                        </button>
+                    </form>
+                }
+
+            </div>
+        }
+    </div>
+}

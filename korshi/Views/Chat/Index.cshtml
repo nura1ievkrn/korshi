@@ -1,0 +1,225 @@
+﻿@using korshi.Models
+@{
+    ViewData["Title"] = "Чат";
+    ViewData["ActiveNav"] = "chat";
+
+    var currentUser = ViewBag.CurrentUser as ApplicationUser;
+    var otherUser = ViewBag.OtherUser as ApplicationUser;
+    var conversation = ViewBag.Conversation as korshi.Models.Conversation;
+    var messages = ViewBag.Messages as List<DirectMessage> ?? new List<DirectMessage>();
+    var conversations = ViewBag.Conversations as List<korshi.Models.Conversation> ?? new List<korshi.Models.Conversation>();
+    var residents = ViewBag.Residents as List<ApplicationUser> ?? new List<ApplicationUser>();
+}
+
+<div class="chat-layout">
+
+    <!-- Левая панель: диалоги + поиск -->
+    <div class="chat-sidebar">
+
+        <div class="chat-sidebar__header">
+            <h2 class="chat-sidebar__title">Сообщения</h2>
+        </div>
+
+        <!-- Поиск соседа -->
+        <div class="chat-search-box">
+            <input type="text" id="residentSearch"
+                   class="kw-search__input" style="border-radius:10px;"
+                   placeholder="Найти соседа..." />
+        </div>
+
+        <!-- Список соседей -->
+        <div class="chat-residents" id="residentsList">
+            @foreach (var resident in residents)
+            {
+                var isActive = otherUser?.Id == resident.Id;
+                <a href="/Chat/Open/@resident.Id"
+                   class="chat-resident @(isActive ? "chat-resident--active" : "")">
+                    <div class="kw-avatar" style="width:40px;height:40px;font-size:13px;flex-shrink:0;">
+                        @resident.Initials
+                    </div>
+                    <div class="chat-resident__info">
+                        <div class="chat-resident__name">@resident.FullName</div>
+                        <div class="chat-resident__apt">
+                            @if (!string.IsNullOrEmpty(resident.ApartmentNumber))
+                            {
+                                <span>кв. @resident.ApartmentNumber</span>
+                            }
+                        </div>
+                    </div>
+                    @if (resident.IsVerified)
+                    {
+                        <i class="bi bi-check-circle-fill" style="color:#10B981; font-size:13px; flex-shrink:0;"></i>
+                    }
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Правая панель: чат -->
+    <div class="chat-main">
+
+        @if (otherUser == null)
+        {
+            <!-- Пустое состояние -->
+            <div class="chat-empty">
+                <i class="bi bi-chat-dots" style="font-size:56px; color:var(--text-muted); opacity:0.2;"></i>
+                <div style="font-size:16px; font-weight:600; color:var(--text-muted); margin-top:16px;">
+                    Выберите соседа для общения
+                </div>
+                <div style="font-size:13px; color:var(--text-muted); margin-top:6px;">
+                    Найдите соседа в списке слева
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Заголовок чата -->
+            <div class="chat-header">
+                <div class="kw-avatar" style="width:40px;height:40px;font-size:13px;">
+                    @otherUser.Initials
+                </div>
+                <div>
+                    <div class="chat-header__name">@otherUser.FullName</div>
+                    <div class="chat-header__status" id="userStatus">
+                        @if (!string.IsNullOrEmpty(otherUser.ApartmentNumber))
+                        {
+                            <span>кв. @otherUser.ApartmentNumber</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Сообщения -->
+            <div class="chat-messages" id="chatMessages">
+                @foreach (var msg in messages)
+                {
+                    var isMine = msg.SenderId == currentUser?.Id;
+                    <div class="chat-msg @(isMine ? "chat-msg--mine" : "chat-msg--theirs")">
+                        @if (!isMine)
+                        {
+                            <div class="kw-avatar"
+                                 style="width:30px;height:30px;font-size:10px;flex-shrink:0;align-self:flex-end;">
+                                @msg.Sender?.Initials
+                            </div>
+                        }
+                        <div class="chat-msg__bubble">
+                            <div class="chat-msg__text">@msg.Content</div>
+                            <div class="chat-msg__time">
+                                @msg.CreatedAt.ToLocalTime().ToString("HH:mm")
+                                @if (isMine)
+                                {
+                                    <i class="bi @(msg.IsRead ? "bi-check2-all" : "bi-check2")"
+                                       style="color:@(msg.IsRead ? "#10B981" : "rgba(255,255,255,0.6)");"></i>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Форма отправки -->
+            <div class="chat-input-area">
+                <div class="chat-input-wrap">
+                    <input type="text" id="messageInput" class="chat-input"
+                           placeholder="Написать сообщение..."
+                           autocomplete="off" maxlength="1000" />
+                    <button id="sendBtn" class="chat-send-btn">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        const currentUserId = "@currentUser?.Id";
+        const receiverId    = "@otherUser?.Id";
+        const convId        = @(conversation?.Id ?? 0);
+
+        // SignalR подключение
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .withAutomaticReconnect()
+            .build();
+
+        // Получить сообщение
+        connection.on("ReceiveMessage", function(msg) {
+            if (msg.conversationId != convId && convId !== 0) return;
+            if (msg.conversationId != convId && receiverId !== msg.senderId && currentUserId !== msg.senderId) return;
+            appendMessage(msg);
+            scrollToBottom();
+        });
+
+        // Онлайн статус
+        connection.on("OnlineCount", function(count) {
+            const el = document.getElementById('onlineCount');
+            if (el) el.textContent = count + ' соседей онлайн';
+        });
+
+        connection.start().then(function() {
+            if (convId > 0) {
+                connection.invoke("MarkAsRead", convId);
+            }
+        }).catch(console.error);
+
+        // Отправка сообщения
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text  = input?.value?.trim();
+            if (!text || !receiverId) return;
+
+            connection.invoke("SendMessage", receiverId, text).catch(console.error);
+            input.value = '';
+            input.focus();
+        }
+
+        document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
+        document.getElementById('messageInput')?.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Добавить сообщение в DOM
+        function appendMessage(msg) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+
+            const isMine = msg.senderId === currentUserId;
+            const div = document.createElement('div');
+            div.className = 'chat-msg ' + (isMine ? 'chat-msg--mine' : 'chat-msg--theirs');
+            div.innerHTML = `
+                ${!isMine ? `<div class="kw-avatar" style="width:30px;height:30px;font-size:10px;flex-shrink:0;align-self:flex-end;background:#1E293B;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;">${msg.senderInitials}</div>` : ''}
+                <div class="chat-msg__bubble">
+                    <div class="chat-msg__text">${escapeHtml(msg.content)}</div>
+                    <div class="chat-msg__time">${msg.createdAt} <i class="bi bi-check2"></i></div>
+                </div>`;
+            container.appendChild(div);
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            if (container) container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        // Поиск соседей
+        document.getElementById('residentSearch')?.addEventListener('input', function() {
+            const q = this.value.toLowerCase();
+            document.querySelectorAll('.chat-resident').forEach(el => {
+                const name = el.querySelector('.chat-resident__name')?.textContent?.toLowerCase() ?? '';
+                el.style.display = name.includes(q) ? '' : 'none';
+            });
+        });
+
+        // Скролл вниз при загрузке
+        scrollToBottom();
+    </script>
+}

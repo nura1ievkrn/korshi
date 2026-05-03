@@ -1,0 +1,160 @@
+﻿@model korshi.ViewModels.PostDetailViewModel
+@{
+    ViewData["Title"] = Model.Post.Title;
+    ViewData["ActiveNav"] = "wall";
+    var catSlug = Model.Post.Category?.Slug ?? "wall";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+}
+
+<div class="kw-detail-page">
+
+    <!-- Кнопка назад -->
+    <a href="/Feed" class="kw-back-btn" style="margin-bottom:20px; display:inline-flex;">
+        <i class="bi bi-arrow-left"></i>
+        Назад к ленте
+    </a>
+
+    <!-- Карточка поста -->
+    <div class="kw-card kw-card--@catSlug kw-card--detail">
+        <div class="kw-card__body">
+
+            <div class="kw-card__header">
+                <div class="kw-avatar kw-avatar--lg">@Model.Post.User?.Initials</div>
+                <div class="kw-card__meta">
+                    <div class="kw-card__name" style="font-size:15px;">
+                        @Model.Post.User?.FirstName @Model.Post.User?.LastName
+                        @if (Model.Post.User?.IsVerified == true)
+                        {
+                            <i class="bi bi-check-circle-fill kw-card__verified"></i>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Post.User?.ApartmentNumber))
+                        {
+                            <span class="kw-apt-badge" style="margin-left:4px;">
+                                кв. @Model.Post.User.ApartmentNumber
+                            </span>
+                        }
+                    </div>
+                    <div class="kw-card__time">
+                        @Model.Post.CreatedAt.ToLocalTime().ToString("dd MMMM yyyy, HH:mm")
+                    </div>
+                </div>
+
+                @if (Model.IsOwner || Model.IsAdmin)
+                {
+                    <form asp-action="Delete" asp-controller="Feed"
+                          asp-route-id="@Model.Post.Id" method="post"
+                          onsubmit="return confirm('Удалить пост?')" style="margin:0;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="kw-icon-btn kw-icon-btn--danger" title="Удалить пост">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                }
+            </div>
+
+            <div class="kw-cat-tag kw-cat-tag--@catSlug" style="margin-bottom:10px;">
+                @Model.Post.Category?.Name
+            </div>
+            <h1 class="kw-detail__title">@Model.Post.Title</h1>
+            <div class="kw-detail__content">@Model.Post.Content</div>
+
+            <div class="kw-card__footer" style="margin-top:16px;">
+                <form asp-action="Like" asp-controller="Feed"
+                      asp-route-id="@Model.Post.Id"
+                      asp-route-returnUrl="/Feed/Detail/@Model.Post.Id"
+                      method="post" style="margin:0;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="kw-like-btn-lg @(Model.IsLiked ? "kw-like-btn--active" : "")">
+                        <i class="bi @(Model.IsLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                        @Model.Post.LikesCount нравится
+                    </button>
+                </form>
+                <span class="kw-card__stat">
+                    <i class="bi bi-chat"></i>
+                    @Model.Post.CommentsCount комментариев
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Комментарии -->
+    <div class="kw-comments" id="comments">
+
+        <h2 class="kw-comments__title">
+            Комментарии
+            <span class="kw-comments__count">@Model.Post.CommentsCount</span>
+        </h2>
+
+        <!-- Форма добавления комментария -->
+        <div class="kw-comment-form">
+            <form asp-action="Comment" asp-controller="Feed" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="PostId" value="@Model.Post.Id" />
+                <div style="display:flex; gap:10px; align-items:flex-start;">
+                    <div class="kw-avatar" style="flex-shrink:0; margin-top:4px;">
+                        @User.Identity?.Name?.Substring(0, Math.Min(2, User.Identity?.Name?.Length ?? 0)).ToUpper()
+                    </div>
+                    <div style="flex:1;">
+                        <textarea name="Content" class="kw-textarea kw-textarea--comment"
+                                  placeholder="Напишите комментарий..." rows="2"></textarea>
+                        <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                            <button type="submit" class="kw-btn-primary kw-btn-sm">
+                                <i class="bi bi-send"></i>
+                                Отправить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Список комментариев -->
+        @if (!Model.Post.Comments.Any())
+        {
+            <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:14px;">
+                Комментариев пока нет. Будьте первым!
+            </div>
+        }
+        else
+        {
+            @foreach (var comment in Model.Post.Comments.OrderBy(c => c.CreatedAt))
+            {
+                <div class="kw-comment">
+                    <div class="kw-avatar" style="flex-shrink:0;">
+                        @comment.User?.Initials
+                    </div>
+                    <div class="kw-comment__body">
+                        <div class="kw-comment__header">
+                            <span class="kw-comment__name">
+                                @comment.User?.FirstName @comment.User?.LastName
+                            </span>
+                            @if (!string.IsNullOrEmpty(comment.User?.ApartmentNumber))
+                            {
+                                <span class="kw-apt-badge">кв. @comment.User.ApartmentNumber</span>
+                            }
+                            <span class="kw-comment__time">
+                                @comment.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")
+                            </span>
+                            @if (Model.IsAdmin || comment.UserId == currentUserId)
+                            {
+                                <form asp-action="DeleteComment" asp-controller="Feed"
+                                      asp-route-id="@comment.Id"
+                                      asp-route-postId="@Model.Post.Id"
+                                      method="post"
+                                      onsubmit="return confirm('Удалить комментарий?')"
+                                      style="margin:0; margin-left:auto;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="kw-icon-btn kw-icon-btn--sm" title="Удалить">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                        <div class="kw-comment__text">@comment.Content</div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+</div>

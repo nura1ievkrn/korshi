@@ -1,0 +1,49 @@
+﻿@model List<korshi.Models.Announcement>
+@{
+    ViewData["Title"] = "Объявления ОСИ";
+    ViewData["ActiveNav"] = "announcements";
+}
+
+<div style="display:flex; align-items:center; margin-bottom:20px;">
+    <h1 style="font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; margin:0;">
+        Объявления ОСИ
+    </h1>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="kw-empty">
+        <i class="bi bi-megaphone" style="font-size:48px; color:var(--text-muted); opacity:0.3;"></i>
+        <div style="font-size:15px; font-weight:600; color:var(--text-muted); margin-top:12px;">
+            Объявлений пока нет
+        </div>
+    </div>
+}
+else
+{
+    <div style="display:flex; flex-direction:column; gap:14px; max-width:720px;">
+        @foreach (var ann in Model)
+        {
+            <div class="ann-card">
+                <div class="ann-card__header">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div class="kw-avatar" style="width:36px;height:36px;font-size:12px;">
+                            @ann.User?.Initials
+                        </div>
+                        <div>
+                            <div style="font-size:13px; font-weight:600; color:var(--text-primary);">
+                                @ann.User?.FullName
+                                <span class="adm-badge adm-badge--blue" style="font-size:10px; margin-left:4px;">ОСИ</span>
+                            </div>
+                            <div style="font-size:11px; color:var(--text-muted);">
+                                @ann.CreatedAt.ToLocalTime().ToString("dd MMMM yyyy, HH:mm")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="ann-card__title">@ann.Title</div>
+                <div class="ann-card__content">@ann.Content</div>
+            </div>
+        }
+    </div>
+}

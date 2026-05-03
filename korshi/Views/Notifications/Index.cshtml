@@ -1,0 +1,82 @@
+﻿@model List<korshi.Models.Notification>
+@using korshi.Services
+@{
+    ViewData["Title"] = "Уведомления";
+    ViewData["ActiveNav"] = "notifications";
+}
+
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+    <h1 style="font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; margin:0;">
+        Уведомления
+    </h1>
+    @if (Model.Any())
+    {
+        <span style="font-size:13px; color:var(--text-muted);">
+            Все отмечены как прочитанные
+        </span>
+    }
+</div>
+
+@if (!Model.Any())
+{
+    <div class="kw-empty">
+        <i class="bi bi-bell" style="font-size:48px; color:var(--text-muted); opacity:0.3;"></i>
+        <div style="font-size:15px; font-weight:600; color:var(--text-muted); margin-top:12px;">
+            Уведомлений нет
+        </div>
+        <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">
+            Здесь будут лайки, комментарии и сообщения
+        </div>
+    </div>
+}
+else
+{
+    <div style="display:flex; flex-direction:column; gap:6px; max-width:720px;">
+        @foreach (var notif in Model)
+        {
+            var icon = NotificationService.GetIcon(notif.Type);
+            var color = NotificationService.GetColor(notif.Type);
+
+            <div class="notif-item @(!notif.IsRead ? "notif-item--unread" : "")">
+                @if (!string.IsNullOrEmpty(notif.Link))
+                {
+                    <a href="@notif.Link" style="display:contents; text-decoration:none;">
+                        <div class="notif-item__inner">
+                            <div class="notif-item__icon" style="background:@color + " 18"; color: @color;">
+                                <i class="bi @icon"></i>
+                            </div>
+                            <div class="notif-item__body">
+                                <div class="notif-item__text">@notif.Message</div>
+                                <div class="notif-item__time">
+                                    @notif.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")
+                                </div>
+                            </div>
+                            @if (!notif.IsRead)
+                            {
+                                <div class="notif-item__dot"></div>
+                            }
+                        </div>
+                    </a>
+                }
+                else
+                {
+                    <div class="notif-item__inner">
+                        <div class="notif-item__icon" style="background:@color + " 18"; color: @color;">
+                            <i class="bi @icon"></i>
+                        </div>
+                        <div class="notif-item__body">
+                            <div class="notif-item__text">@notif.Message</div>
+                            <div class="notif-item__time">
+                                @notif.CreatedAt.ToLocalTime().ToString("dd MMM, HH:mm")
+                            </div>
+                        </div>
+                        @if (!notif.IsRead)
+                        {
+                            <div class="notif-item__dot"></div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
